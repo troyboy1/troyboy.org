@@ -1,134 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TroyBoy</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-    
-    <!-- In a real setup, you would link to the same style.css as your index page here -->
-    <style>
-        body { background-color: #050505; color: #eee; font-family: 'JetBrains Mono', monospace; }
-        .stat-box { background: #111; border: 1px solid #333; }
-        input, select { background: #000; border: 1px solid #333; color: #fff; padding: 0.5rem; width: 100%; }
-        input:focus, select:focus { outline: none; border-color: #00ff41; }
-        .parchment { border-left: 4px solid #00ff41; }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Troy Nelson | Home</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="css/home.css" />
 </head>
-<body class="p-6 min-h-screen flex justify-center items-center">
 
-    <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8">
-        
-        <!-- Left: The Builder Form -->
-        <div>
-            <div class="mb-6">
-                <a href="index.html" class="text-gray-500 hover:text-white text-sm">&larr; Back to Home</a>
-                <h1 class="text-3xl font-bold mt-2 text-white">Character <span style="color:#00ff41">Forge</span></h1>
-            </div>
-
-            <div class="space-y-4">
-                <div>
-                    <label class="text-xs text-gray-500 uppercase">Character Name</label>
-                    <input type="text" id="charName" placeholder="Enter name..." oninput="updateCard()">
-                </div>
-                
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-xs text-gray-500 uppercase">Class</label>
-                        <select id="charClass" onchange="updateCard()">
-                            <option value="Warrior">Warrior</option>
-                            <option value="Mage">Mage</option>
-                            <option value="Rogue">Rogue</option>
-                            <option value="Paladin">Paladin</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="text-xs text-gray-500 uppercase">Race</label>
-                        <select id="charRace" onchange="updateCard()">
-                            <option value="Human">Human</option>
-                            <option value="Elf">Elf</option>
-                            <option value="Dwarf">Dwarf</option>
-                            <option value="Orc">Orc</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Stats Inputs -->
-                <div class="grid grid-cols-3 gap-2">
-                    <div>
-                        <label class="text-xs text-gray-500">STR</label>
-                        <input type="number" id="str" value="10" oninput="updateCard()">
-                    </div>
-                    <div>
-                        <label class="text-xs text-gray-500">DEX</label>
-                        <input type="number" id="dex" value="10" oninput="updateCard()">
-                    </div>
-                    <div>
-                        <label class="text-xs text-gray-500">INT</label>
-                        <input type="number" id="int" value="10" oninput="updateCard()">
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Right: The Visual Card (Updates Live) -->
-        <div class="flex items-center justify-center">
-            <div class="stat-box p-6 w-full rounded-lg parchment relative overflow-hidden">
-                <!-- Background decorative numeral -->
-                <div class="absolute -right-4 -bottom-10 text-9xl font-bold text-gray-800 opacity-20 pointer-events-none">D20</div>
-                
-                <div class="border-b border-gray-700 pb-4 mb-4 flex justify-between items-start">
-                    <div>
-                        <h2 id="display-name" class="text-2xl font-bold text-white">Unknown Hero</h2>
-                        <p class="text-sm text-[#00ff41]"><span id="display-race">Human</span> <span id="display-class">Warrior</span></p>
-                    </div>
-                    <div class="h-10 w-10 bg-gray-800 rounded-full flex items-center justify-center">
-                        <i class="fas fa-user text-gray-500"></i>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-3 gap-4 text-center mb-6">
-                    <div class="bg-black p-2 rounded border border-gray-800">
-                        <div class="text-xs text-gray-500">STR</div>
-                        <div id="display-str" class="text-xl font-bold text-red-500">10</div>
-                    </div>
-                    <div class="bg-black p-2 rounded border border-gray-800">
-                        <div class="text-xs text-gray-500">DEX</div>
-                        <div id="display-dex" class="text-xl font-bold text-blue-500">10</div>
-                    </div>
-                    <div class="bg-black p-2 rounded border border-gray-800">
-                        <div class="text-xs text-gray-500">INT</div>
-                        <div id="display-int" class="text-xl font-bold text-purple-500">10</div>
-                    </div>
-                </div>
-
-                <div class="text-xs text-gray-500 italic text-center">
-                    "Ready for adventure on TroyBoy.org"
-                </div>
-            </div>
-        </div>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-left">
+      <span class="logo">Troy.</span>
     </div>
+    <div class="nav-right">
+      <a href="/">Home</a>
+      <a href="/dnd/">D&D</a>
+      <a href="https://github.com/troyboy1" target="_blank">GitHub</a>
+      <a href="mailto:you@troyboy.org">Contact</a>
+    </div>
+  </nav>
 
-    <!-- JavaScript Logic -->
-    <script>
-        function updateCard() {
-            // Get values
-            const name = document.getElementById('charName').value || 'Unknown Hero';
-            const cls = document.getElementById('charClass').value;
-            const race = document.getElementById('charRace').value;
-            const str = document.getElementById('str').value;
-            const dex = document.getElementById('dex').value;
-            const int = document.getElementById('int').value;
+  <!-- Hero Section -->
+  <header class="hero">
+    <h1>Hello, I'm <span class="highlight">Troy Nelson</span></h1>
+    <p class="tagline">Tech tinkerer, DIY’er, chicken dad, gamer, and builder of random projects.</p>
+    <a class="hero-btn" href="/dnd/">View My D&D Project ↗</a>
+  </header>
 
-            // Update Display
-            document.getElementById('display-name').innerText = name;
-            document.getElementById('display-class').innerText = cls;
-            document.getElementById('display-race').innerText = race;
-            document.getElementById('display-str').innerText = str;
-            document.getElementById('display-dex').innerText = dex;
-            document.getElementById('display-int').innerText = int;
-        }
-    </script>
-</body>
-</html>
+  <!-- Main Content -->
+  <main class="main-content">
+    <section class="card-grid">
+
+      <a href="/dnd/" class="card">
+        <h3>🎲 D&D One-Shot Tools</h3>
+        <p>Character builder, sheets, and
