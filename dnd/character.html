@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Character Sheet | Troyboy One-Shot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="body-bg">
+  <header class="site-header">
+    <div class="header-inner">
+      <h1 id="sheetCharName">Your Character Sheet</h1>
+      <p class="subtitle">Dungeons &amp; Dragons · One-Shot Edition</p>
+    </div>
+  </header>
+
+  <main class="page-content">
+    <section class="sheet-hero">
+      <div class="hero-portrait-frame">
+        <img
+          id="sheetPortrait"
+          src="https://source.unsplash.com/400x600/?fantasy,character,portrait"
+          alt="Character portrait"
+        />
+      </div>
+      <div class="hero-summary">
+        <h2 id="sheetNameClass">Name the Brave, Class Here</h2>
+        <p id="sheetPlayer" class="hero-meta"></p>
+        <p id="sheetRaceBackground" class="hero-meta"></p>
+        <p id="sheetAlignmentLevel" class="hero-meta"></p>
+        <a href="index.html" class="btn small">← Edit Character</a>
+      </div>
+    </section>
+
+    <section class="cards-layout">
+      <!-- Card 1: Overview -->
+      <article class="sheet-card">
+        <h3>Overview</h3>
+        <dl class="dl-grid">
+          <div>
+            <dt>Character Name</dt>
+            <dd id="ovName"></dd>
+          </div>
+          <div>
+            <dt>Player</dt>
+            <dd id="ovPlayer"></dd>
+          </div>
+          <div>
+            <dt>Class</dt>
+            <dd id="ovClass"></dd>
+          </div>
+          <div>
+            <dt>Subclass</dt>
+            <dd id="ovSubclass"></dd>
+          </div>
+          <div>
+            <dt>Race</dt>
+            <dd id="ovRace"></dd>
+          </div>
+          <div>
+            <dt>Background</dt>
+            <dd id="ovBackground"></dd>
+          </div>
+          <div>
+            <dt>Alignment</dt>
+            <dd id="ovAlignment"></dd>
+          </div>
+          <div>
+            <dt>Level</dt>
+            <dd id="ovLevel"></dd>
+          </div>
+        </dl>
+      </article>
+
+      <!-- Card 2: Stats & Saves -->
+      <article class="sheet-card">
+        <h3>Ability Scores &amp; Combat</h3>
+        <div class="stat-block">
+          <div class="stat">
+            <span class="stat-label">STR</span>
+            <span class="stat-value" id="stStr">—</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">DEX</span>
+            <span class="stat-value" id="stDex">—</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">CON</span>
+            <span class="stat-value" id="stCon">—</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">INT</span>
+            <span class="stat-value" id="stInt">—</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">WIS</span>
+            <span class="stat-value" id="stWis">—</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">CHA</span>
+            <span class="stat-value" id="stCha">—</span>
+          </div>
+        </div>
+
+        <dl class="dl-grid compact">
+          <div>
+            <dt>Max HP</dt>
+            <dd id="stHp"></dd>
+          </div>
+          <div>
+            <dt>Armor Class</dt>
+            <dd id="stAc"></dd>
+          </div>
+          <div>
+            <dt>Initiative</dt>
+            <dd id="stInit"></dd>
+          </div>
+          <div>
+            <dt>Speed</dt>
+            <dd id="stSpeed"></dd>
+          </div>
+          <div>
+            <dt>Prof. Bonus</dt>
+            <dd id="stProf"></dd>
+          </div>
+          <div>
+            <dt>Passive Perception</dt>
+            <dd id="stPassive"></dd>
+          </div>
+        </dl>
+      </article>
+
+      <!-- Card 3: Features -->
+      <article class="sheet-card">
+        <h3>Features &amp; Traits</h3>
+        <p id="ftFeatures" class="card-text"></p>
+      </article>
+
+      <!-- Card 4: Spells -->
+      <article class="sheet-card">
+        <h3>Spells</h3>
+        <p class="card-subtitle"><strong>Spell Slots / Notes:</strong> <span id="spSlots"></span></p>
+        <p id="spSpells" class="card-text"></p>
+      </article>
+
+      <!-- Card 5: Equipment & Backstory -->
+      <article class="sheet-card">
+        <h3>Equipment</h3>
+        <div class="equip-section">
+          <h4>Weapons</h4>
+          <p id="eqWeapons" class="card-text"></p>
+        </div>
+        <div class="equip-section">
+          <h4>Armor &amp; Protection</h4>
+          <p id="eqArmor" class="card-text"></p>
+        </div>
+        <div class="equip-section">
+          <h4>Other Gear &amp; Magic Items</h4>
+          <p id="eqItems" class="card-text"></p>
+        </div>
+        <div class="equip-section">
+          <h4>Currency</h4>
+          <p id="eqCoins" class="card-text"></p>
+        </div>
+      </article>
+
+      <article class="sheet-card wide">
+        <h3>Backstory</h3>
+        <p id="bsBackstory" class="card-text backstory-text"></p>
+      </article>
+    </section>
+
+    <section class="empty-state" id="emptyState">
+      <p>
+        No character found. Go back to the
+        <a href="index.html">builder page</a> and create one!
+      </p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>
+      Built for Troy's D&amp;D one-shot ·
+      <a href="https://troyboy.org" target="_blank" rel="noopener">troyboy.org</a>
+    </p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
