@@ -1,13 +1,29 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-// Your Supabase creds (publishable/anon is fine for frontend)
+/** Bump this if you ever want to confirm you’re seeing the newest JS in console */
+const APP_VERSION = "2026-01-17-autosave-v1";
+console.log("ANG Character Sheet JS:", APP_VERSION);
+
+// Supabase creds (publishable/anon is fine for frontend)
 const SUPABASE_URL = "https://dumirslpqthoageqbgrx.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_hCrE4pwKX_CAb5M0JGTf3g_a2wUhCPg";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// URL style: /dnd/chars/character.html?troy
-const slug = window.location.search.slice(1).trim();
+/**
+ * URL style:
+ *   /dnd/chars/character.html?troy
+ * Optional cache-bust allowed:
+ *   /dnd/chars/character.html?troy&v=3
+ */
+function getSlugFromUrl() {
+  const q = window.location.search;
+  if (!q || q === "?") return "";
+  const raw = q.slice(1);              // remove "?"
+  const first = raw.split("&")[0];     // take "troy" from "troy&v=3"
+  return decodeURIComponent(first).trim();
+}
+const slug = getSlugFromUrl();
 
 const $ = (id) => document.getElementById(id);
 
@@ -60,12 +76,18 @@ const els = {
   // weapons
   weaponsBody: $("weaponsBody"),
 
-  // NEW: split fields
-  equipment: $("equipment"), // under Hit Points
-  notes: $("notes"),         // under Level 6 Rites
+  // split fields (NEW IDs in your HTML)
+  equipment: $("equipment"),
+  notes: $("notes"),
 };
 
 let isReady = false;
+
+// ---------- autosave state ----------
+let autosaveTimer = null;
+let isSaving = false;
+let pendingSave = false;
+const AUTOSAVE_DELAY_MS = 1500;
 
 // ---------- helpers ----------
 function setStatus(msg) { els.status.textContent = msg; }
@@ -124,7 +146,6 @@ function getWeapons() {
     rows[i][k] = inp.value ?? "";
   });
 
-  // trim empty rows
   return rows.filter(r => (r.name + r.type + r.damage + r.range + r.notes).trim() !== "");
 }
 
@@ -135,6 +156,42 @@ function updateModsUI() {
   els.intMod.value = calcMod(els.int.value);
   els.wisMod.value = calcMod(els.wis.value);
   els.chaMod.value = calcMod(els.cha.value);
+}
+
+// ---------- autosave wiring ----------
+function scheduleAutosave() {
+  if (!isReady) return;
+
+  setStatus("Unsaved…");
+
+  if (autosaveTimer) clearTimeout(autosaveTimer);
+
+  autosaveTimer = setTimeout(async () => {
+    if (isSaving) {
+      pendingSave = true;
+      return;
+    }
+
+    isSaving = true;
+    try {
+      await saveCharacter(); // uses existing save logic
+    } finally {
+      isSaving = false;
+    }
+
+    if (pendingSave) {
+      pendingSave = false;
+      scheduleAutosave();
+    }
+  }, AUTOSAVE_DELAY_MS);
+}
+
+function wireAutosave() {
+  const fields = document.querySelectorAll("input, textarea, select");
+  fields.forEach(el => {
+    el.addEventListener("input", scheduleAutosave);
+    el.addEventListener("change", scheduleAutosave);
+  });
 }
 
 // ---------- load/save ----------
@@ -221,7 +278,7 @@ async function loadCharacter() {
   els.ritesL3Known.value = r.l3_known ?? "";
   els.ritesL6Known.value = r.l6_known ?? "";
 
-  // NEW split fields
+  // split fields
   els.equipment.value = c.equipment ?? "";
   els.notes.value = c.notes ?? "";
 
@@ -229,6 +286,9 @@ async function loadCharacter() {
 
   els.saveBtn.disabled = false;
   isReady = true;
+
+  wireAutosave();
+
   setStatus("Ready.");
 }
 
@@ -292,7 +352,6 @@ async function saveCharacter() {
       l6_known: els.ritesL6Known.value ?? "",
     },
 
-    // NEW split fields
     equipment: els.equipment.value ?? "",
     notes: els.notes.value ?? "",
   };
@@ -317,12 +376,17 @@ async function saveCharacter() {
   setStatus("Saved ✔");
 }
 
+// manual save still works (and triggers autosave status correctly too)
+els.saveBtn.addEventListener("click", async () => {
+  pendingSave = false;
+  if (autosaveTimer) clearTimeout(autosaveTimer);
+  await saveCharacter();
+});
+
 // modifier live update
 ["str","dex","con","int","wis","cha"].forEach((k) => {
   $(k).addEventListener("input", updateModsUI);
 });
-
-els.saveBtn.addEventListener("click", saveCharacter);
 
 // boot
 loadCharacter();
