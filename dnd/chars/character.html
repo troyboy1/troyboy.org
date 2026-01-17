@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Character Sheet</title>
+
+  <style>
+    /* “ANG-ish” clean dark layout (simple headings like your Character Sheet page) */
+    :root{
+      --bg:#0b0c10;
+      --panel:#11131a;
+      --ink:#e9e9ee;
+      --muted:#b7b7c4;
+      --line:#2a2d3a;
+      --accent:#ffffff;
+      --btn:#f2f2f2;
+      --btnInk:#0b0c10;
+    }
+    html,body{background:var(--bg); color:var(--ink); margin:0; font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;}
+    a{color:var(--ink); text-decoration:none; opacity:.9}
+    a:hover{opacity:1; text-decoration:underline}
+    .wrap{max-width:1000px; margin:0 auto; padding:24px 16px 80px;}
+
+    /* simple top nav (structure similar to ANG pages) */
+    .nav{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 16px; border-bottom:1px solid var(--line); position:sticky; top:0; background:rgba(11,12,16,.92); backdrop-filter:blur(10px);
+      z-index:10;
+    }
+    .brand{display:flex; gap:10px; align-items:center; font-weight:700; letter-spacing:.3px}
+    .brand .dot{width:10px; height:10px; background:var(--accent); border-radius:999px; display:inline-block}
+    .navlinks{display:flex; gap:14px; flex-wrap:wrap; font-size:14px; color:var(--muted)}
+    .navlinks a{color:var(--muted)}
+    .navlinks a:hover{color:var(--ink)}
+
+    /* page typography like your instruction page */
+    h1{font-size:34px; margin:18px 0 6px}
+    h2{font-size:22px; margin:26px 0 8px}
+    h3{font-size:16px; margin:16px 0 6px; color:var(--muted); font-weight:600}
+    p,li{line-height:1.6; color:var(--muted)}
+    ul{margin:8px 0 0 18px}
+
+    .panel{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:16px;
+      margin-top:18px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap:12px;
+    }
+    .field{display:flex; flex-direction:column; gap:6px}
+    label{font-size:12px; letter-spacing:.2px; color:var(--muted)}
+    input, textarea, select{
+      background:#0e1016;
+      color:var(--ink);
+      border:1px solid var(--line);
+      border-radius:10px;
+      padding:10px 10px;
+      font-size:14px;
+      outline:none;
+    }
+    textarea{min-height:90px; resize:vertical}
+    .span-3{grid-column:span 3}
+    .span-4{grid-column:span 4}
+    .span-6{grid-column:span 6}
+    .span-12{grid-column:span 12}
+
+    .rowline{height:1px; background:var(--line); margin:14px 0}
+    .actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:12px}
+    button{
+      background:var(--btn);
+      color:var(--btnInk);
+      border:0;
+      border-radius:10px;
+      padding:10px 14px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    button:disabled{opacity:.6; cursor:not-allowed}
+    .status{font-size:13px; color:var(--muted)}
+    .pill{display:inline-flex; gap:8px; align-items:center; padding:8px 10px; border:1px solid var(--line); border-radius:999px; color:var(--muted); font-size:13px}
+    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace}
+    .warn{color:#ffd28a}
+  </style>
+</head>
+
+<body>
+  <div class="nav">
+    <div class="brand"><span class="dot"></span> ALLNIGHTGAMERS</div>
+    <div class="navlinks">
+      <a href="https://allnightgamers.com/">Home</a>
+      <a href="https://allnightgamers.com/dnd-c3-combat-rules">D&D C3 Combat Rules</a>
+      <a href="https://allnightgamers.com/character-sheet">Character Sheet</a>
+      <a href="https://allnightgamers.com/dnd-c3-classes">Classes</a>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <h1 id="pageTitle">Character Sheet</h1>
+    <p class="mono" id="slugLine"></p>
+
+    <!-- Instructions section (keeps the same “how-to” vibe as your ANG page) -->
+    <div class="panel">
+      <h2>How to Fill Out the Valen Character Sheet</h2>
+      <p>This page is your editable sheet + quick reminders.</p>
+
+      <h3>Quick rule for checks</h3>
+      <p>When you try something risky: roll d20 + the relevant stat modifier (+ training).</p>
+
+      <h3>What saves to roll</h3>
+      <ul>
+        <li>STR Save: shove, crush, forced movement</li>
+        <li>DEX Save: traps, explosions, sudden hazards</li>
+        <li>CON Save: poison, disease, exhaustion</li>
+        <li>INT Save: illusions, mind puzzles, arcane overload</li>
+        <li>WIS Save: fear, charm resistance, awareness checks</li>
+        <li>CHA Save: spiritual pressure, will vs domination</li>
+      </ul>
+      <p style="margin-top:10px;">(These headings mirror your live Character Sheet rules page.)</p>
+    </div>
+
+    <!-- Editable sheet -->
+    <div class="panel">
+      <div class="actions">
+        <button id="saveBtn" disabled>Save</button>
+        <span class="status" id="status">Loading…</span>
+        <span class="pill">Last saved: <span class="mono" id="lastSaved">—</span></span>
+      </div>
+
+      <div class="rowline"></div>
+
+      <div class="grid">
+        <div class="field span-4">
+          <label>Name</label>
+          <input id="name" placeholder="Character name" />
+        </div>
+        <div class="field span-4">
+          <label>Class</label>
+          <input id="class" placeholder="Paladin / Rogue / etc" />
+        </div>
+        <div class="field span-2">
+          <label>Level</label>
+          <input id="level" type="number" min="1" step="1" />
+        </div>
+        <div class="field span-2">
+          <label>Player</label>
+          <input id="player" placeholder="Troy" />
+        </div>
+
+        <div class="field span-3">
+          <label>Main Stat (Rites)</label>
+          <select id="main_stat">
+            <option value="">—</option>
+            <option value="STR">STR</option>
+            <option value="DEX">DEX</option>
+            <option value="CON">CON</option>
+            <option value="INT">INT</option>
+            <option value="WIS">WIS</option>
+            <option value="CHA">CHA</option>
+          </select>
+        </div>
+        <div class="field span-3">
+          <label>Speed</label>
+          <input id="speed" type="number" min="0" step="5" placeholder="30" />
+        </div>
+        <div class="field span-3">
+          <label>Armor Class (AC)</label>
+          <input id="ac" type="number" min="0" step="1" placeholder="10" />
+        </div>
+
+        <div class="field span-3">
+          <label>Passive Perception</label>
+          <input id="passive" type="number" min="0" step="1" placeholder="10" />
+        </div>
+
+        <div class="field span-4">
+          <label>HP (Current)</label>
+          <input id="hp_current" type="number" min="0" step="1" />
+        </div>
+        <div class="field span-4">
+          <label>HP (Max)</label>
+          <input id="hp_max" type="number" min="0" step="1" />
+        </div>
+        <div class="field span-4">
+          <label>Temp HP</label>
+          <input id="hp_temp" type="number" min="0" step="1" />
+        </div>
+
+        <div class="field span-12">
+          <label>Ability Scores (just store what you use — we’ll expand later)</label>
+          <textarea id="stats_json" class="mono" placeholder='Example:
+{"STR":16,"DEX":10,"CON":14,"INT":8,"WIS":12,"CHA":14}'></textarea>
+          <p class="warn" style="margin:6px 0 0;">Tip: this is JSON for now so we can ship fast. Next pass, I’ll make it pretty boxes like a real sheet.</p>
+        </div>
+
+        <div class="field span-6">
+          <label>Inventory (one per line)</label>
+          <textarea id="inventory" placeholder="Longsword&#10;Holy symbol&#10;Rations (3)"></textarea>
+        </div>
+        <div class="field span-6">
+          <label>Notes / Equipment</label>
+          <textarea id="notes" placeholder="Session notes, quest reminders, conditions, etc"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <p class="status">
+        URL format: <span class="mono">character.html?troy</span> (the part after “?” is the character identifier).
+        If you share the link, anyone with it can edit/save.
+      </p>
+    </div>
+  </div>
+
+  <script type="module" src="./character.js"></script>
+</body>
+</html>
