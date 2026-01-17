@@ -6,153 +6,244 @@
   <title>Character Sheet</title>
 
   <style>
-    /* “ANG-ish” clean dark layout (simple headings like your Character Sheet page) */
     :root{
-      --bg:#0b0c10;
-      --panel:#11131a;
-      --ink:#e9e9ee;
-      --muted:#b7b7c4;
-      --line:#2a2d3a;
-      --accent:#ffffff;
-      --btn:#f2f2f2;
-      --btnInk:#0b0c10;
+      --ink:#111;
+      --line:#111;
+      --paper:#fff;
+      --muted:#333;
     }
-    html,body{background:var(--bg); color:var(--ink); margin:0; font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;}
-    a{color:var(--ink); text-decoration:none; opacity:.9}
-    a:hover{opacity:1; text-decoration:underline}
-    .wrap{max-width:1000px; margin:0 auto; padding:24px 16px 80px;}
-
-    /* simple top nav (structure similar to ANG pages) */
-    .nav{
-      display:flex; align-items:center; justify-content:space-between;
-      padding:14px 16px; border-bottom:1px solid var(--line); position:sticky; top:0; background:rgba(11,12,16,.92); backdrop-filter:blur(10px);
-      z-index:10;
+    html,body{margin:0;background:#f4f4f4;color:var(--ink);font-family:Arial, Helvetica, sans-serif}
+    .page{
+      max-width: 980px;
+      margin: 24px auto;
+      background: var(--paper);
+      box-shadow: 0 6px 24px rgba(0,0,0,.12);
+      padding: 18px 18px 24px;
     }
-    .brand{display:flex; gap:10px; align-items:center; font-weight:700; letter-spacing:.3px}
-    .brand .dot{width:10px; height:10px; background:var(--accent); border-radius:999px; display:inline-block}
-    .navlinks{display:flex; gap:14px; flex-wrap:wrap; font-size:14px; color:var(--muted)}
-    .navlinks a{color:var(--muted)}
-    .navlinks a:hover{color:var(--ink)}
 
-    /* page typography like your instruction page */
-    h1{font-size:34px; margin:18px 0 6px}
-    h2{font-size:22px; margin:26px 0 8px}
-    h3{font-size:16px; margin:16px 0 6px; color:var(--muted); font-weight:600}
-    p,li{line-height:1.6; color:var(--muted)}
-    ul{margin:8px 0 0 18px}
-
-    .panel{
-      background:var(--panel);
+    .topbar{
+      display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+      margin-bottom: 10px;
+    }
+    .title{
+      font-weight: 900;
+      font-size: 22px;
+      letter-spacing: .4px;
+      text-transform: uppercase;
+      margin: 0;
+    }
+    .meta{
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .actions{
+      display:flex; flex-direction:column; align-items:flex-end; gap:6px;
+    }
+    .btn{
       border:1px solid var(--line);
-      border-radius:12px;
-      padding:16px;
-      margin-top:18px;
-    }
-    .grid{
-      display:grid;
-      grid-template-columns: repeat(12, 1fr);
-      gap:12px;
-    }
-    .field{display:flex; flex-direction:column; gap:6px}
-    label{font-size:12px; letter-spacing:.2px; color:var(--muted)}
-    input, textarea, select{
-      background:#0e1016;
-      color:var(--ink);
-      border:1px solid var(--line);
-      border-radius:10px;
-      padding:10px 10px;
-      font-size:14px;
-      outline:none;
-    }
-    textarea{min-height:90px; resize:vertical}
-    .span-3{grid-column:span 3}
-    .span-4{grid-column:span 4}
-    .span-6{grid-column:span 6}
-    .span-12{grid-column:span 12}
-
-    .rowline{height:1px; background:var(--line); margin:14px 0}
-    .actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:12px}
-    button{
-      background:var(--btn);
-      color:var(--btnInk);
-      border:0;
-      border-radius:10px;
-      padding:10px 14px;
+      background:#fff;
+      padding:6px 10px;
       font-weight:700;
       cursor:pointer;
     }
-    button:disabled{opacity:.6; cursor:not-allowed}
-    .status{font-size:13px; color:var(--muted)}
-    .pill{display:inline-flex; gap:8px; align-items:center; padding:8px 10px; border:1px solid var(--line); border-radius:999px; color:var(--muted); font-size:13px}
-    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace}
-    .warn{color:#ffd28a}
+    .btn:disabled{opacity:.5; cursor:not-allowed}
+    .status{font-size:12px;color:var(--muted)}
+    .lastsaved{font-size:12px;color:var(--muted)}
+
+    .outer{
+      border:2px solid var(--line);
+      padding: 12px;
+    }
+
+    .grid-top{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .grid-top-2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .field label{
+      font-size: 12px;
+      font-weight: 700;
+      display:block;
+      margin-bottom: 3px;
+    }
+    .field input, .field textarea, .field select{
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid var(--line);
+      padding: 6px 6px;
+      font-size: 13px;
+      background: #fff;
+      color: var(--ink);
+    }
+    textarea{resize: vertical; min-height: 72px}
+
+    .hr{
+      height: 1px; background: var(--line); margin: 10px 0;
+    }
+
+    .columns{
+      display:grid;
+      grid-template-columns: 1.05fr 0.9fr 1.25fr; /* left / middle / right */
+      gap: 12px;
+      align-items:start;
+    }
+
+    .box{
+      border:1px solid var(--line);
+      padding: 8px;
+    }
+    .box h3{
+      margin: 0 0 8px;
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 4px;
+    }
+
+    /* ability scores */
+    .ability-grid{
+      display:grid;
+      grid-template-columns: 44px 1fr 44px;
+      gap: 6px 8px;
+      align-items:center;
+      font-size: 12px;
+    }
+    .ability-grid .abbr{font-weight: 900}
+    .small{
+      padding: 6px 6px;
+      text-align:center;
+    }
+    .hint{
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    /* saving throws list */
+    .list-grid{
+      display:grid;
+      grid-template-columns: 1fr 60px;
+      gap: 6px 8px;
+      align-items:center;
+      font-size: 12px;
+    }
+
+    /* armor */
+    .armor-grid{
+      display:grid;
+      grid-template-columns: 1fr 70px;
+      gap: 6px 10px;
+      align-items:center;
+      font-size: 12px;
+    }
+    .chk{
+      display:flex; align-items:center; gap:8px;
+    }
+    .chk input{width:auto}
+
+    /* hit points */
+    .hp-grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      align-items:end;
+      font-size: 12px;
+    }
+
+    /* weapons table */
+    table{
+      width:100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 12px;
+    }
+    th, td{
+      border:1px solid var(--line);
+      padding: 4px;
+      vertical-align: top;
+    }
+    th{
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: .2px;
+      background:#fff;
+    }
+    td input{
+      width:100%;
+      box-sizing:border-box;
+      border:0;
+      padding: 4px 4px;
+      font-size: 12px;
+      outline:none;
+    }
+
+    /* rites */
+    .rites-uses{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .rites-uses .field input{font-weight:700}
+
+    @media (max-width: 980px){
+      .columns{grid-template-columns: 1fr}
+    }
+    @media print{
+      body{background:#fff}
+      .page{box-shadow:none; margin:0; max-width:none}
+      .actions{display:none}
+    }
   </style>
 </head>
 
 <body>
-  <div class="nav">
-    <div class="brand"><span class="dot"></span> ALLNIGHTGAMERS</div>
-    <div class="navlinks">
-      <a href="https://allnightgamers.com/">Home</a>
-      <a href="https://allnightgamers.com/dnd-c3-combat-rules">D&D C3 Combat Rules</a>
-      <a href="https://allnightgamers.com/character-sheet">Character Sheet</a>
-      <a href="https://allnightgamers.com/dnd-c3-classes">Classes</a>
-    </div>
-  </div>
-
-  <div class="wrap">
-    <h1 id="pageTitle">Character Sheet</h1>
-    <p class="mono" id="slugLine"></p>
-
-    <!-- Instructions section (keeps the same “how-to” vibe as your ANG page) -->
-    <div class="panel">
-      <h2>How to Fill Out the Valen Character Sheet</h2>
-      <p>This page is your editable sheet + quick reminders.</p>
-
-      <h3>Quick rule for checks</h3>
-      <p>When you try something risky: roll d20 + the relevant stat modifier (+ training).</p>
-
-      <h3>What saves to roll</h3>
-      <ul>
-        <li>STR Save: shove, crush, forced movement</li>
-        <li>DEX Save: traps, explosions, sudden hazards</li>
-        <li>CON Save: poison, disease, exhaustion</li>
-        <li>INT Save: illusions, mind puzzles, arcane overload</li>
-        <li>WIS Save: fear, charm resistance, awareness checks</li>
-        <li>CHA Save: spiritual pressure, will vs domination</li>
-      </ul>
-      <p style="margin-top:10px;">(These headings mirror your live Character Sheet rules page.)</p>
-    </div>
-
-    <!-- Editable sheet -->
-    <div class="panel">
-      <div class="actions">
-        <button id="saveBtn" disabled>Save</button>
-        <span class="status" id="status">Loading…</span>
-        <span class="pill">Last saved: <span class="mono" id="lastSaved">—</span></span>
+  <div class="page">
+    <div class="topbar">
+      <div>
+        <h1 class="title" id="sheetTitle">Character Sheet</h1>
+        <div class="meta" id="slugLine"></div>
       </div>
+      <div class="actions">
+        <button class="btn" id="saveBtn" disabled>Save</button>
+        <div class="status" id="status">Loading…</div>
+        <div class="lastsaved">Last saved: <span id="lastSaved">—</span></div>
+      </div>
+    </div>
 
-      <div class="rowline"></div>
-
-      <div class="grid">
-        <div class="field span-4">
+    <div class="outer">
+      <!-- Top fields -->
+      <div class="grid-top">
+        <div class="field">
           <label>Name</label>
-          <input id="name" placeholder="Character name" />
+          <input id="name" />
         </div>
-        <div class="field span-4">
+        <div class="field">
           <label>Class</label>
-          <input id="class" placeholder="Paladin / Rogue / etc" />
+          <input id="class" />
         </div>
-        <div class="field span-2">
+        <div class="field">
           <label>Level</label>
           <input id="level" type="number" min="1" step="1" />
         </div>
-        <div class="field span-2">
-          <label>Player</label>
-          <input id="player" placeholder="Troy" />
-        </div>
+      </div>
 
-        <div class="field span-3">
+      <div class="grid-top">
+        <div class="field">
+          <label>Player</label>
+          <input id="player" />
+        </div>
+        <div class="field">
           <label>Main Stat (Rites)</label>
           <select id="main_stat">
             <option value="">—</option>
@@ -164,56 +255,172 @@
             <option value="CHA">CHA</option>
           </select>
         </div>
-        <div class="field span-3">
-          <label>Speed</label>
-          <input id="speed" type="number" min="0" step="5" placeholder="30" />
-        </div>
-        <div class="field span-3">
-          <label>Armor Class (AC)</label>
-          <input id="ac" type="number" min="0" step="1" placeholder="10" />
-        </div>
-
-        <div class="field span-3">
-          <label>Passive Perception</label>
-          <input id="passive" type="number" min="0" step="1" placeholder="10" />
-        </div>
-
-        <div class="field span-4">
-          <label>HP (Current)</label>
-          <input id="hp_current" type="number" min="0" step="1" />
-        </div>
-        <div class="field span-4">
-          <label>HP (Max)</label>
-          <input id="hp_max" type="number" min="0" step="1" />
-        </div>
-        <div class="field span-4">
-          <label>Temp HP</label>
-          <input id="hp_temp" type="number" min="0" step="1" />
-        </div>
-
-        <div class="field span-12">
-          <label>Ability Scores (just store what you use — we’ll expand later)</label>
-          <textarea id="stats_json" class="mono" placeholder='Example:
-{"STR":16,"DEX":10,"CON":14,"INT":8,"WIS":12,"CHA":14}'></textarea>
-          <p class="warn" style="margin:6px 0 0;">Tip: this is JSON for now so we can ship fast. Next pass, I’ll make it pretty boxes like a real sheet.</p>
-        </div>
-
-        <div class="field span-6">
-          <label>Inventory (one per line)</label>
-          <textarea id="inventory" placeholder="Longsword&#10;Holy symbol&#10;Rations (3)"></textarea>
-        </div>
-        <div class="field span-6">
-          <label>Notes / Equipment</label>
-          <textarea id="notes" placeholder="Session notes, quest reminders, conditions, etc"></textarea>
+        <div class="field">
+          <label></label>
+          <!-- empty cell to keep 3-column rhythm like the sheet -->
+          <input disabled style="opacity:0;border:0;padding:0;height:0" />
         </div>
       </div>
-    </div>
 
-    <div class="panel">
-      <p class="status">
-        URL format: <span class="mono">character.html?troy</span> (the part after “?” is the character identifier).
-        If you share the link, anyone with it can edit/save.
-      </p>
+      <div class="hr"></div>
+
+      <div class="columns">
+        <!-- LEFT COLUMN -->
+        <div>
+          <div class="box">
+            <h3>Ability Scores</h3>
+            <div class="ability-grid">
+              <div class="abbr">STR</div><input id="str" type="number" class="small" /><input id="str_mod" class="small" readonly />
+              <div class="abbr">DEX</div><input id="dex" type="number" class="small" /><input id="dex_mod" class="small" readonly />
+              <div class="abbr">CON</div><input id="con" type="number" class="small" /><input id="con_mod" class="small" readonly />
+              <div class="abbr">INT</div><input id="int" type="number" class="small" /><input id="int_mod" class="small" readonly />
+              <div class="abbr">WIS</div><input id="wis" type="number" class="small" /><input id="wis_mod" class="small" readonly />
+              <div class="abbr">CHA</div><input id="cha" type="number" class="small" /><input id="cha_mod" class="small" readonly />
+            </div>
+            <div class="hint">Modifier = (Score − 10) ÷ 2 rounded down</div>
+          </div>
+
+          <div class="box" style="margin-top:12px">
+            <h3>Modifiers & Notes</h3>
+            <div class="grid-top-2">
+              <div class="field">
+                <label>Speed</label>
+                <input id="speed" type="number" min="0" step="5" />
+              </div>
+              <div class="field">
+                <label>Passive Perception</label>
+                <input id="passive" type="number" min="0" step="1" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Class Passives / Traits</label>
+              <textarea id="class_traits"></textarea>
+            </div>
+
+            <div class="field" style="margin-top:8px">
+              <label>Background / Tags</label>
+              <textarea id="background_tags"></textarea>
+            </div>
+          </div>
+
+          <div class="box" style="margin-top:12px">
+            <h3>Common Activities</h3>
+            <textarea id="common_activities" style="min-height:160px"></textarea>
+          </div>
+        </div>
+
+        <!-- MIDDLE COLUMN -->
+        <div>
+          <div class="box">
+            <h3>Saving Throws</h3>
+            <div class="list-grid">
+              <div>STR Save</div><input id="save_str" type="number" class="small" />
+              <div>DEX Save</div><input id="save_dex" type="number" class="small" />
+              <div>CON Save</div><input id="save_con" type="number" class="small" />
+              <div>INT Save</div><input id="save_int" type="number" class="small" />
+              <div>WIS Save</div><input id="save_wis" type="number" class="small" />
+              <div>CHA Save</div><input id="save_cha" type="number" class="small" />
+            </div>
+          </div>
+
+          <div class="box" style="margin-top:12px">
+            <h3>Armor Class</h3>
+            <div class="armor-grid">
+              <div class="field" style="grid-column: span 2">
+                <label>Armor Type</label>
+                <input id="armor_type" />
+              </div>
+
+              <div class="chk" style="grid-column: span 2">
+                <input id="shield" type="checkbox" />
+                <label for="shield" style="margin:0;font-weight:700">Shield</label>
+              </div>
+
+              <div class="field" style="grid-column: span 2">
+                <label>Total AC</label>
+                <input id="ac" type="number" min="0" step="1" />
+              </div>
+            </div>
+          </div>
+
+          <div class="box" style="margin-top:12px">
+            <h3>Hit Points</h3>
+            <div class="hp-grid">
+              <div class="field">
+                <label>Max HP</label>
+                <input id="hp_max" type="number" min="0" step="1" />
+              </div>
+              <div class="field">
+                <label>Current HP</label>
+                <input id="hp_current" type="number" min="0" step="1" />
+              </div>
+              <div class="field">
+                <label>Temp HP</label>
+                <input id="hp_temp" type="number" min="0" step="1" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div>
+          <div class="box">
+            <h3>Weapons</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:30%">Name</th>
+                  <th style="width:16%">Type</th>
+                  <th style="width:16%">Damage</th>
+                  <th style="width:16%">Range</th>
+                  <th style="width:22%">Notes</th>
+                </tr>
+              </thead>
+              <tbody id="weaponsBody">
+                <!-- JS fills 4 rows -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="box" style="margin-top:12px">
+            <h3>Rites</h3>
+
+            <div class="rites-uses">
+              <div class="field">
+                <label>Level 1 Uses</label>
+                <input id="rites_l1_uses" type="number" min="0" step="1" />
+              </div>
+              <div class="field">
+                <label>Level 3 Uses</label>
+                <input id="rites_l3_uses" type="number" min="0" step="1" />
+              </div>
+              <div class="field">
+                <label>Level 6 Uses</label>
+                <input id="rites_l6_uses" type="number" min="0" step="1" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Level 1 Rites Known</label>
+              <textarea id="rites_l1_known"></textarea>
+            </div>
+            <div class="field" style="margin-top:8px">
+              <label>Level 3 Rites Known</label>
+              <textarea id="rites_l3_known"></textarea>
+            </div>
+            <div class="field" style="margin-top:8px">
+              <label>Level 6 Rites Known</label>
+              <textarea id="rites_l6_known"></textarea>
+            </div>
+          </div>
+
+          <div class="box" style="margin-top:12px">
+            <h3>Equipment & Notes</h3>
+            <textarea id="equipment_notes" style="min-height:220px"></textarea>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
