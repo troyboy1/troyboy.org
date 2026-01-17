@@ -1,6 +1,6 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-// Use your real values here:
+// Your Supabase creds (publishable/anon is fine for frontend)
 const SUPABASE_URL = "https://dumirslpqthoageqbgrx.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_hCrE4pwKX_CAb5M0JGTf3g_a2wUhCPg";
 
@@ -44,11 +44,10 @@ const els = {
   hpCurrent: $("hp_current"),
   hpTemp: $("hp_temp"),
 
-  // notes
+  // left column textareas
   classTraits: $("class_traits"),
   backgroundTags: $("background_tags"),
   commonActivities: $("common_activities"),
-  equipmentNotes: $("equipment_notes"),
 
   // rites
   ritesL1Uses: $("rites_l1_uses"),
@@ -58,7 +57,12 @@ const els = {
   ritesL3Known: $("rites_l3_known"),
   ritesL6Known: $("rites_l6_known"),
 
+  // weapons
   weaponsBody: $("weaponsBody"),
+
+  // NEW: split fields
+  equipment: $("equipment"), // under Hit Points
+  notes: $("notes"),         // under Level 6 Rites
 };
 
 let isReady = false;
@@ -120,8 +124,8 @@ function getWeapons() {
     rows[i][k] = inp.value ?? "";
   });
 
-  // optionally trim empty rows
-  return rows.filter(r => (r.name || r.type || r.damage || r.range || r.notes).trim?.() !== "" || (r.name+r.type+r.damage+r.range+r.notes).trim() !== "");
+  // trim empty rows
+  return rows.filter(r => (r.name + r.type + r.damage + r.range + r.notes).trim() !== "");
 }
 
 function updateModsUI() {
@@ -177,7 +181,7 @@ async function loadCharacter() {
   els.cha.value = a.CHA ?? "";
   updateModsUI();
 
-  // modifiers & notes
+  // misc
   els.speed.value = c.speed ?? "";
   els.passive.value = c.passive_perception ?? "";
 
@@ -217,8 +221,9 @@ async function loadCharacter() {
   els.ritesL3Known.value = r.l3_known ?? "";
   els.ritesL6Known.value = r.l6_known ?? "";
 
-  // equipment
-  els.equipmentNotes.value = c.equipment_notes ?? "";
+  // NEW split fields
+  els.equipment.value = c.equipment ?? "";
+  els.notes.value = c.notes ?? "";
 
   renderLastSaved(data.updated_at);
 
@@ -287,7 +292,9 @@ async function saveCharacter() {
       l6_known: els.ritesL6Known.value ?? "",
     },
 
-    equipment_notes: els.equipmentNotes.value ?? "",
+    // NEW split fields
+    equipment: els.equipment.value ?? "",
+    notes: els.notes.value ?? "",
   };
 
   const nowIso = new Date().toISOString();
