@@ -137,3 +137,57 @@ async function loadCharacter() {
     .single();
 
   if (error) {
+    console.error(error);
+    setStatus("Not found in database (create this row in Supabase Table Editor).");
+    return;
+  }
+
+  rowId = data.id;
+
+  const c = data.data_json || {};
+  setFormFromData(c);
+  renderLastSaved(data.updated_at);
+
+  els.saveBtn.disabled = false;
+  isReady = true;
+  setStatus("Ready.");
+}
+
+async function saveCharacter() {
+  if (!isReady || !rowId) return;
+
+  setStatus("Saving…");
+
+  let updatedData;
+  try {
+    updatedData = getDataFromForm();
+  } catch (e) {
+    setStatus(`Cannot save: ${e.message}`);
+    return;
+  }
+
+  const nowIso = new Date().toISOString();
+
+  const { error } = await supabase
+    .from("characters")
+    .update({
+      data_json: updatedData,
+      updated_at: nowIso,
+    })
+    .eq("id", rowId);
+
+  if (error) {
+    console.error(error);
+    setStatus("Save failed (check console).");
+    return;
+  }
+
+  els.pageTitle.textContent = updatedData.name ? `Character Sheet — ${updatedData.name}` : "Character Sheet";
+  renderLastSaved(nowIso);
+  setStatus("Saved ✔");
+}
+
+els.saveBtn.addEventListener("click", saveCharacter);
+
+// boot
+loadCharacter();
