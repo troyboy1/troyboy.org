@@ -62,12 +62,6 @@
       gap: 10px;
       margin-bottom: 10px;
     }
-    .grid-top-2{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
 
     .field label{
       font-size: 12px;
@@ -196,6 +190,10 @@
     }
     .rites-uses .field input{font-weight:700}
 
+    /* fill helpers */
+    .fillbox { min-height: 260px; width: 100%; }
+    .fillbox-tall { min-height: 320px; width: 100%; }
+
     @media (max-width: 980px){
       .columns{grid-template-columns: 1fr}
     }
@@ -257,7 +255,6 @@
         </div>
         <div class="field">
           <label></label>
-          <!-- empty cell to keep 3-column rhythm like the sheet -->
           <input disabled style="opacity:0;border:0;padding:0;height:0" />
         </div>
       </div>
@@ -282,14 +279,18 @@
 
           <div class="box" style="margin-top:12px">
             <h3>Modifiers & Notes</h3>
-            <div class="grid-top-2">
-              <div class="field">
+            <div class="grid-top" style="grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:10px;">
+              <div class="field" style="grid-column: span 1;">
                 <label>Speed</label>
                 <input id="speed" type="number" min="0" step="5" />
               </div>
-              <div class="field">
+              <div class="field" style="grid-column: span 1;">
                 <label>Passive Perception</label>
                 <input id="passive" type="number" min="0" step="1" />
+              </div>
+              <div class="field" style="grid-column: span 1;">
+                <label></label>
+                <input disabled style="opacity:0;border:0;padding:0;height:0" />
               </div>
             </div>
 
@@ -306,7 +307,7 @@
 
           <div class="box" style="margin-top:12px">
             <h3>Common Activities</h3>
-            <textarea id="common_activities" style="min-height:160px"></textarea>
+            <textarea id="common_activities" class="fillbox"></textarea>
           </div>
         </div>
 
@@ -361,6 +362,12 @@
               </div>
             </div>
           </div>
+
+          <!-- EQUIPMENT (moved under Hit Points) -->
+          <div class="box" style="margin-top:12px">
+            <h3>Equipment</h3>
+            <textarea id="equipment" class="fillbox-tall"></textarea>
+          </div>
         </div>
 
         <!-- RIGHT COLUMN -->
@@ -377,9 +384,7 @@
                   <th style="width:22%">Notes</th>
                 </tr>
               </thead>
-              <tbody id="weaponsBody">
-                <!-- JS fills 4 rows -->
-              </tbody>
+              <tbody id="weaponsBody"></tbody>
             </table>
           </div>
 
@@ -415,9 +420,10 @@
             </div>
           </div>
 
+          <!-- NOTES (moved under Level 6 Rites) -->
           <div class="box" style="margin-top:12px">
-            <h3>Equipment & Notes</h3>
-            <textarea id="equipment_notes" style="min-height:220px"></textarea>
+            <h3>Notes</h3>
+            <textarea id="notes" class="fillbox"></textarea>
           </div>
         </div>
       </div>
