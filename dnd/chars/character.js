@@ -1,18 +1,18 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-// TODO: paste these from Supabase -> Project Settings -> API
+// Use your real values here:
 const SUPABASE_URL = "https://dumirslpqthoageqbgrx.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_hCrE4pwKX_CAb5M0JGTf3g_a2wUhCPg";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// URL style: /chars/character.html?troy
+// URL style: /dnd/chars/character.html?troy
 const slug = window.location.search.slice(1).trim();
 
 const $ = (id) => document.getElementById(id);
 
 const els = {
-  pageTitle: $("pageTitle"),
+  sheetTitle: $("sheetTitle"),
   slugLine: $("slugLine"),
   saveBtn: $("saveBtn"),
   status: $("status"),
@@ -23,111 +23,127 @@ const els = {
   level: $("level"),
   player: $("player"),
   mainStat: $("main_stat"),
+
+  // ability scores
+  str: $("str"), dex: $("dex"), con: $("con"), int: $("int"), wis: $("wis"), cha: $("cha"),
+  strMod: $("str_mod"), dexMod: $("dex_mod"), conMod: $("con_mod"),
+  intMod: $("int_mod"), wisMod: $("wis_mod"), chaMod: $("cha_mod"),
+
   speed: $("speed"),
-  ac: $("ac"),
   passive: $("passive"),
 
-  hpCurrent: $("hp_current"),
+  // saves
+  saveStr: $("save_str"), saveDex: $("save_dex"), saveCon: $("save_con"),
+  saveInt: $("save_int"), saveWis: $("save_wis"), saveCha: $("save_cha"),
+
+  // armor/hp
+  armorType: $("armor_type"),
+  shield: $("shield"),
+  ac: $("ac"),
   hpMax: $("hp_max"),
+  hpCurrent: $("hp_current"),
   hpTemp: $("hp_temp"),
 
-  statsJson: $("stats_json"),
-  inventory: $("inventory"),
-  notes: $("notes"),
+  // notes
+  classTraits: $("class_traits"),
+  backgroundTags: $("background_tags"),
+  commonActivities: $("common_activities"),
+  equipmentNotes: $("equipment_notes"),
+
+  // rites
+  ritesL1Uses: $("rites_l1_uses"),
+  ritesL3Uses: $("rites_l3_uses"),
+  ritesL6Uses: $("rites_l6_uses"),
+  ritesL1Known: $("rites_l1_known"),
+  ritesL3Known: $("rites_l3_known"),
+  ritesL6Known: $("rites_l6_known"),
+
+  weaponsBody: $("weaponsBody"),
 };
 
-let rowId = null;
 let isReady = false;
 
-function setStatus(msg) {
-  els.status.textContent = msg;
-}
+// ---------- helpers ----------
+function setStatus(msg) { els.status.textContent = msg; }
 
 function safeNum(v, fallback = 0) {
   const n = Number(v);
   return Number.isFinite(n) ? n : fallback;
 }
 
-function parseStatsJson(text) {
-  const t = (text || "").trim();
-  if (!t) return {};
-  try {
-    const obj = JSON.parse(t);
-    return (obj && typeof obj === "object") ? obj : {};
-  } catch {
-    return null; // signal invalid
-  }
+function calcMod(score) {
+  const s = Number(score);
+  if (!Number.isFinite(s)) return "";
+  const mod = Math.floor((s - 10) / 2);
+  return (mod >= 0 ? `+${mod}` : `${mod}`);
 }
 
 function renderLastSaved(iso) {
   if (!iso) { els.lastSaved.textContent = "—"; return; }
-  try {
-    const d = new Date(iso);
-    els.lastSaved.textContent = d.toLocaleString();
-  } catch {
-    els.lastSaved.textContent = iso;
+  const d = new Date(iso);
+  els.lastSaved.textContent = d.toLocaleString();
+}
+
+function ensureWeaponsRows(count = 4) {
+  els.weaponsBody.innerHTML = "";
+  for (let i = 0; i < count; i++) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><input data-w="${i}" data-k="name" /></td>
+      <td><input data-w="${i}" data-k="type" /></td>
+      <td><input data-w="${i}" data-k="damage" /></td>
+      <td><input data-w="${i}" data-k="range" /></td>
+      <td><input data-w="${i}" data-k="notes" /></td>
+    `;
+    els.weaponsBody.appendChild(tr);
   }
 }
 
-function setFormFromData(c) {
-  els.name.value = c.name ?? "";
-  els.klass.value = c.class ?? "";
-  els.level.value = c.level ?? 1;
-  els.player.value = c.player ?? "";
-  els.mainStat.value = c.main_stat ?? "";
-  els.speed.value = c.speed ?? 30;
-  els.ac.value = c.ac ?? 10;
-  els.passive.value = c.passive_perception ?? 10;
-
-  els.hpCurrent.value = c.hp?.current ?? 0;
-  els.hpMax.value = c.hp?.max ?? 0;
-  els.hpTemp.value = c.hp?.temp ?? 0;
-
-  els.statsJson.value = JSON.stringify(c.stats ?? {}, null, 2);
-
-  els.inventory.value = Array.isArray(c.inventory) ? c.inventory.join("\n") : "";
-  els.notes.value = c.notes ?? "";
-
-  els.pageTitle.textContent = c.name ? `Character Sheet — ${c.name}` : "Character Sheet";
+function setWeapons(weapons) {
+  const w = Array.isArray(weapons) ? weapons : [];
+  const inputs = els.weaponsBody.querySelectorAll("input[data-w]");
+  inputs.forEach((inp) => {
+    const i = Number(inp.dataset.w);
+    const k = inp.dataset.k;
+    inp.value = (w[i] && w[i][k]) ? String(w[i][k]) : "";
+  });
 }
 
-function getDataFromForm() {
-  const stats = parseStatsJson(els.statsJson.value);
-  if (stats === null) {
-    throw new Error("Ability Scores JSON is invalid (fix it or clear it).");
-  }
+function getWeapons() {
+  const rows = [];
+  for (let i = 0; i < 4; i++) rows.push({ name:"", type:"", damage:"", range:"", notes:"" });
 
-  return {
-    name: els.name.value.trim(),
-    class: els.klass.value.trim(),
-    level: safeNum(els.level.value, 1),
-    player: els.player.value.trim(),
-    main_stat: els.mainStat.value || "",
-    speed: safeNum(els.speed.value, 30),
-    ac: safeNum(els.ac.value, 10),
-    passive_perception: safeNum(els.passive.value, 10),
-    hp: {
-      current: safeNum(els.hpCurrent.value, 0),
-      max: safeNum(els.hpMax.value, 0),
-      temp: safeNum(els.hpTemp.value, 0),
-    },
-    stats,
-    inventory: (els.inventory.value || "")
-      .split("\n").map(s => s.trim()).filter(Boolean),
-    notes: els.notes.value ?? "",
-  };
+  const inputs = els.weaponsBody.querySelectorAll("input[data-w]");
+  inputs.forEach((inp) => {
+    const i = Number(inp.dataset.w);
+    const k = inp.dataset.k;
+    rows[i][k] = inp.value ?? "";
+  });
+
+  // optionally trim empty rows
+  return rows.filter(r => (r.name || r.type || r.damage || r.range || r.notes).trim?.() !== "" || (r.name+r.type+r.damage+r.range+r.notes).trim() !== "");
 }
 
+function updateModsUI() {
+  els.strMod.value = calcMod(els.str.value);
+  els.dexMod.value = calcMod(els.dex.value);
+  els.conMod.value = calcMod(els.con.value);
+  els.intMod.value = calcMod(els.int.value);
+  els.wisMod.value = calcMod(els.wis.value);
+  els.chaMod.value = calcMod(els.cha.value);
+}
+
+// ---------- load/save ----------
 async function loadCharacter() {
+  ensureWeaponsRows(4);
+
   if (!slug) {
-    els.pageTitle.textContent = "Character Sheet";
-    els.slugLine.innerHTML = `<span class="warn">Missing character key.</span> Try: <span class="mono">character.html?troy</span>`;
+    els.slugLine.textContent = "Missing character key. Use: character.html?troy";
     setStatus("No character specified.");
     return;
   }
 
   els.slugLine.textContent = `Character key: ${slug}`;
-
   setStatus("Loading…");
 
   const { data, error } = await supabase
@@ -138,14 +154,72 @@ async function loadCharacter() {
 
   if (error) {
     console.error(error);
-    setStatus("Not found in database (create this row in Supabase Table Editor).");
+    setStatus("Not found in DB. Create a row with this slug in Supabase.");
     return;
   }
 
-  rowId = data.id;
-
   const c = data.data_json || {};
-  setFormFromData(c);
+
+  // top
+  els.name.value = c.name ?? "";
+  els.klass.value = c.class ?? "";
+  els.level.value = c.level ?? 1;
+  els.player.value = c.player ?? "";
+  els.mainStat.value = c.main_stat ?? "";
+
+  // ability scores
+  const a = c.ability || {};
+  els.str.value = a.STR ?? "";
+  els.dex.value = a.DEX ?? "";
+  els.con.value = a.CON ?? "";
+  els.int.value = a.INT ?? "";
+  els.wis.value = a.WIS ?? "";
+  els.cha.value = a.CHA ?? "";
+  updateModsUI();
+
+  // modifiers & notes
+  els.speed.value = c.speed ?? "";
+  els.passive.value = c.passive_perception ?? "";
+
+  els.classTraits.value = c.class_traits ?? "";
+  els.backgroundTags.value = c.background_tags ?? "";
+  els.commonActivities.value = c.common_activities ?? "";
+
+  // saves
+  const s = c.saves || {};
+  els.saveStr.value = s.STR ?? "";
+  els.saveDex.value = s.DEX ?? "";
+  els.saveCon.value = s.CON ?? "";
+  els.saveInt.value = s.INT ?? "";
+  els.saveWis.value = s.WIS ?? "";
+  els.saveCha.value = s.CHA ?? "";
+
+  // armor/hp
+  const ar = c.armor || {};
+  els.armorType.value = ar.type ?? "";
+  els.shield.checked = !!ar.shield;
+  els.ac.value = c.ac ?? "";
+
+  const hp = c.hp || {};
+  els.hpMax.value = hp.max ?? "";
+  els.hpCurrent.value = hp.current ?? "";
+  els.hpTemp.value = hp.temp ?? "";
+
+  // weapons
+  setWeapons(c.weapons);
+
+  // rites
+  const r = c.rites || {};
+  els.ritesL1Uses.value = r.l1_uses ?? "";
+  els.ritesL3Uses.value = r.l3_uses ?? "";
+  els.ritesL6Uses.value = r.l6_uses ?? "";
+  els.ritesL1Known.value = r.l1_known ?? "";
+  els.ritesL3Known.value = r.l3_known ?? "";
+  els.ritesL6Known.value = r.l6_known ?? "";
+
+  // equipment
+  els.equipmentNotes.value = c.equipment_notes ?? "";
+
   renderLastSaved(data.updated_at);
 
   els.saveBtn.disabled = false;
@@ -154,27 +228,77 @@ async function loadCharacter() {
 }
 
 async function saveCharacter() {
-  if (!isReady || !rowId) return;
+  if (!isReady) return;
 
   setStatus("Saving…");
 
-  let updatedData;
-  try {
-    updatedData = getDataFromForm();
-  } catch (e) {
-    setStatus(`Cannot save: ${e.message}`);
-    return;
-  }
+  const payload = {
+    name: els.name.value.trim(),
+    class: els.klass.value.trim(),
+    level: safeNum(els.level.value, 1),
+    player: els.player.value.trim(),
+    main_stat: els.mainStat.value || "",
+
+    ability: {
+      STR: safeNum(els.str.value, ""),
+      DEX: safeNum(els.dex.value, ""),
+      CON: safeNum(els.con.value, ""),
+      INT: safeNum(els.int.value, ""),
+      WIS: safeNum(els.wis.value, ""),
+      CHA: safeNum(els.cha.value, ""),
+    },
+
+    speed: safeNum(els.speed.value, ""),
+    passive_perception: safeNum(els.passive.value, ""),
+
+    class_traits: els.classTraits.value ?? "",
+    background_tags: els.backgroundTags.value ?? "",
+    common_activities: els.commonActivities.value ?? "",
+
+    saves: {
+      STR: safeNum(els.saveStr.value, ""),
+      DEX: safeNum(els.saveDex.value, ""),
+      CON: safeNum(els.saveCon.value, ""),
+      INT: safeNum(els.saveInt.value, ""),
+      WIS: safeNum(els.saveWis.value, ""),
+      CHA: safeNum(els.saveCha.value, ""),
+    },
+
+    armor: {
+      type: els.armorType.value ?? "",
+      shield: !!els.shield.checked,
+    },
+    ac: safeNum(els.ac.value, ""),
+
+    hp: {
+      max: safeNum(els.hpMax.value, ""),
+      current: safeNum(els.hpCurrent.value, ""),
+      temp: safeNum(els.hpTemp.value, ""),
+    },
+
+    weapons: getWeapons(),
+
+    rites: {
+      l1_uses: safeNum(els.ritesL1Uses.value, ""),
+      l3_uses: safeNum(els.ritesL3Uses.value, ""),
+      l6_uses: safeNum(els.ritesL6Uses.value, ""),
+      l1_known: els.ritesL1Known.value ?? "",
+      l3_known: els.ritesL3Known.value ?? "",
+      l6_known: els.ritesL6Known.value ?? "",
+    },
+
+    equipment_notes: els.equipmentNotes.value ?? "",
+  };
 
   const nowIso = new Date().toISOString();
 
   const { error } = await supabase
     .from("characters")
     .update({
-      data_json: updatedData,
-      updated_at: nowIso,
+      data_json: payload,
+      updated_at: nowIso
     })
-    .eq("id", rowId);
+    .eq("slug", slug);
 
   if (error) {
     console.error(error);
@@ -182,10 +306,14 @@ async function saveCharacter() {
     return;
   }
 
-  els.pageTitle.textContent = updatedData.name ? `Character Sheet — ${updatedData.name}` : "Character Sheet";
   renderLastSaved(nowIso);
   setStatus("Saved ✔");
 }
+
+// modifier live update
+["str","dex","con","int","wis","cha"].forEach((k) => {
+  $(k).addEventListener("input", updateModsUI);
+});
 
 els.saveBtn.addEventListener("click", saveCharacter);
 
