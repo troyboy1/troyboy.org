@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kareth Town Sheet</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="sheet">
+    <header class="sheet-header">
+      <div>
+        <h1>TOWN SHEET</h1>
+        <div class="subtle">Town key: <span id="townKeyLabel">kareth</span></div>
+      </div>
+
+      <div class="save-panel">
+        <button id="saveBtn" type="button">Save</button>
+        <div id="saveStatus">Loading…</div>
+        <div>Last saved: <span id="lastSaved">—</span></div>
+      </div>
+    </header>
+
+    <section class="top-grid boxed">
+      <label>
+        Town Name
+        <input data-field="name" type="text" value="Kareth" />
+      </label>
+
+      <label>
+        Steward
+        <input data-field="steward" type="text" value="Selene Vaelor" />
+      </label>
+
+      <label>
+        Restoration Turn
+        <input data-field="turn" type="number" value="1" min="1" />
+      </label>
+
+      <label>
+        Authority
+        <input data-field="authority" type="text" value="Party Stewardship" />
+      </label>
+
+      <label>
+        Status
+        <input data-field="status" type="text" value="Saved, Damaged, Rebuilding" />
+      </label>
+
+      <label>
+        City Identity
+        <select data-field="identity">
+          <option>Undecided</option>
+          <option>Free Harbor</option>
+          <option>Rebel Sanctuary</option>
+          <option>Fortress Kareth</option>
+          <option>Guild City</option>
+          <option>Holy Refuge</option>
+          <option>Shadow Port</option>
+          <option>Tyrant City</option>
+        </select>
+      </label>
+    </section>
+
+    <section class="main-grid">
+      <div class="left-col">
+        <section class="boxed">
+          <h2>POPULATION</h2>
+          <div class="stat-grid two-col">
+            <label>Citizens <input data-field="citizens" type="number" value="430" min="0" /></label>
+            <label>Children <input data-field="children" type="number" value="85" min="0" /></label>
+            <label>Workers Available <input data-field="workers" type="number" value="115" min="0" /></label>
+            <label>Militia Ready <input data-field="militia" type="number" value="18" min="0" /></label>
+            <label>Specialists <input data-field="specialists" type="number" value="7" min="0" /></label>
+            <label>Wounded <input data-field="wounded" type="number" value="35" min="0" /></label>
+            <label>Refugees <input data-field="refugees" type="number" value="0" min="0" /></label>
+            <label>Growth Timer <input data-field="growthTimer" type="number" value="0" min="0" max="4" /></label>
+          </div>
+        </section>
+
+        <section class="boxed">
+          <h2>TOWN STATS</h2>
+          <div class="stat-grid">
+            <label>Loyalty <input data-field="loyalty" type="number" value="4" min="0" max="5" /></label>
+            <label>Stability <input data-field="stability" type="number" value="3" min="0" max="5" /></label>
+            <label>Security <input data-field="security" type="number" value="1" min="0" max="5" /></label>
+            <label>Prosperity <input data-field="prosperity" type="number" value="1" min="0" max="5" /></label>
+            <label>Hope <input data-field="hope" type="number" value="4" min="0" max="5" /></label>
+          </div>
+          <p class="small-note">0 = crisis, 3 = functional, 5 = exceptional.</p>
+        </section>
+
+        <section class="boxed">
+          <h2>RESOURCES</h2>
+          <div class="stat-grid two-col">
+            <label>Platinum <input data-field="platinum" type="number" value="350" min="0" /></label>
+            <label>Wood <input data-field="wood" type="number" value="80" min="0" /></label>
+            <label>Stone <input data-field="stone" type="number" value="40" min="0" /></label>
+            <label>Ore <input data-field="ore" type="number" value="25" min="0" /></label>
+            <label>Food <input data-field="food" type="number" value="120" min="0" /></label>
+            <label>Medicine <input data-field="medicine" type="number" value="35" min="0" /></label>
+            <label>Influence <input data-field="influence" type="number" value="4" min="0" /></label>
+            <label>Available Labor <input data-field="labor" type="number" value="115" min="0" /></label>
+          </div>
+        </section>
+
+        <section class="boxed">
+          <h2>THREATS</h2>
+          <div class="stat-grid">
+            <label>Temple Attention <input data-field="templeAttention" type="number" value="2" min="0" max="5" /></label>
+            <label>Food Shortage <input data-field="foodShortage" type="number" value="1" min="0" max="5" /></label>
+            <label>Raider Pressure <input data-field="raiderPressure" type="number" value="1" min="0" max="5" /></label>
+            <label>Public Fear <input data-field="publicFear" type="number" value="0" min="0" max="5" /></label>
+            <label>Marked Door Mystery <input data-field="markedDoorMystery" type="number" value="2" min="0" max="5" /></label>
+            <label>Selene Conflict <input data-field="seleneConflict" type="number" value="0" min="0" max="5" /></label>
+          </div>
+          <p class="small-note">When a threat reaches 5, it triggers a town event.</p>
+        </section>
+      </div>
+
+      <div class="right-col">
+        <section class="boxed">
+          <h2>BUILDINGS</h2>
+          <table class="sheet-table" id="buildingsTable">
+            <thead>
+              <tr>
+                <th>Building</th>
+                <th>Lvl</th>
+                <th>Status / Current Benefit</th>
+                <th>Next Upgrade</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Townhall</td>
+                <td><input data-building="townhall" type="number" value="1" min="0" max="5" /></td>
+                <td><textarea data-field="townhallStatus">Command Table: unlocks town policies.</textarea></td>
+                <td><textarea data-field="townhallNext">Records Office: +1 Stability, better taxes and reports.</textarea></td>
+              </tr>
+              <tr>
+                <td>Storehouses</td>
+                <td><input data-building="storehouses" type="number" value="1" min="0" max="5" /></td>
+                <td><textarea data-field="storehousesStatus">Salvage Depot: basic storage for food, wood, and stone.</textarea></td>
+                <td><textarea data-field="storehousesNext">Guarded Stores: reduce theft and supply loss events.</textarea></td>
+              </tr>
+              <tr>
+                <td>Smith</td>
+                <td><input data-building="smith" type="number" value="0" min="0" max="5" /></td>
+                <td><textarea data-field="smithStatus">Wild Forge: unsafe and not fully usable.</textarea></td>
+                <td><textarea data-field="smithNext">Working Forge: basic tools, repairs, and rebuilding support.</textarea></td>
+              </tr>
+              <tr>
+                <td>Docks</td>
+                <td><input data-building="docks" type="number" value="1" min="0" max="5" /></td>
+                <td><textarea data-field="docksStatus">Safe Moorings: fishing and local boats resume.</textarea></td>
+                <td><textarea data-field="docksNext">Cargo Pier: generates Food and Platinum.</textarea></td>
+              </tr>
+              <tr>
+                <td>Roads</td>
+                <td><input data-building="roads" type="number" value="1" min="0" max="5" /></td>
+                <td><textarea data-field="roadsStatus">Cleared Paths: normal movement restored.</textarea></td>
+                <td><textarea data-field="roadsNext">Cart Roads: projects cost less Labor.</textarea></td>
+              </tr>
+              <tr>
+                <td>Windmill</td>
+                <td><input data-building="windmill" type="number" value="0" min="0" max="5" /></td>
+                <td><textarea data-field="windmillStatus">Razed Mill: no grain processing.</textarea></td>
+                <td><textarea data-field="windmillNext">Temporary Millstone: small Food income.</textarea></td>
+              </tr>
+              <tr>
+                <td>Healer’s House</td>
+                <td><input data-building="healersHouse" type="number" value="1" min="0" max="5" /></td>
+                <td><textarea data-field="healersHouseStatus">Healer’s Room: wounded recover each turn.</textarea></td>
+                <td><textarea data-field="healersHouseNext">Clinic: better recovery and efficient Medicine use.</textarea></td>
+              </tr>
+              <tr>
+                <td>Guard Barracks</td>
+                <td><input data-building="guardBarracks" type="number" value="0" min="0" max="5" /></td>
+                <td><textarea data-field="guardBarracksStatus">No Barracks: militia disorganized.</textarea></td>
+                <td><textarea data-field="guardBarracksNext">Watch Post: unlocks patrols.</textarea></td>
+              </tr>
+              <tr>
+                <td>Housing District</td>
+                <td><input data-building="housingDistrict" type="number" value="1" min="0" max="5" /></td>
+                <td><textarea data-field="housingDistrictStatus">Emergency Shelter: prevents homelessness crisis.</textarea></td>
+                <td><textarea data-field="housingDistrictNext">Repaired Homes: supports current population.</textarea></td>
+              </tr>
+              <tr>
+                <td>Party Command House</td>
+                <td><input data-building="partyCommandHouse" type="number" value="0" min="0" max="5" /></td>
+                <td><textarea data-field="partyCommandHouseStatus">Claimed Ruin: symbolic only.</textarea></td>
+                <td><textarea data-field="partyCommandHouseNext">Restored House: safe rest in Kareth.</textarea></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="boxed three-textareas">
+          <div>
+            <h2>ACTIVE PROJECTS</h2>
+            <textarea data-field="activeProjects">Repair the Smith
+Secure the Storehouses
+Clear Main Roads</textarea>
+          </div>
+          <div>
+            <h2>POLICIES</h2>
+            <textarea data-field="policies">Labor Policy: Paid Labor First
+Ration Policy: Normal Rations
+Security Policy: Volunteer Watch
+Refugee Policy: Limited Shelter</textarea>
+          </div>
+          <div>
+            <h2>COUNCIL LOG</h2>
+            <textarea data-field="councilLog">Turn 1:
+- Party accepted stewardship.
+- Selene appointed acting steward.
+- Kareth began rebuilding.
+- Marked doors remain unexplained.</textarea>
+          </div>
+        </section>
+
+        <section class="boxed">
+          <h2>SELENE’S REPORT / NOTES</h2>
+          <textarea data-field="notes" class="large-notes">Kareth is saved, but still vulnerable. Morale is high after the party’s perfect rescue, but security and infrastructure are weak. The city needs priorities before the party leaves: defense, food, roads, labor, and investigation into the marked doors.</textarea>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="town.js"></script>
+</body>
+</html>
