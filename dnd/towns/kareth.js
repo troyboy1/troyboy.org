@@ -368,7 +368,7 @@ async function saveTown() {
   const nowIso = new Date().toISOString();
 
   const { error } = await supabase
-    .from("towns")
+    .from("kareth")
     .update({
       data_json: payload,
       updated_at: nowIso,
