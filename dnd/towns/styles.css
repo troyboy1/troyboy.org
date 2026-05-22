@@ -1,5 +1,22 @@
-/* KARETH TOWN SHEET STYLES */
-/* Put this file at: /dnd/towns/styles.css */
+/* KARETH TOWN SHEET - RTS / DARK THEME */
+
+:root {
+  --bg: #111418;
+  --panel: #1a1f25;
+  --panel-2: #20262d;
+  --panel-3: #2a3139;
+  --line: #3a434d;
+  --line-bright: #5a6775;
+  --text: #e8e3d6;
+  --muted: #a9b2bc;
+  --heading: #f2e4b3;
+  --accent: #c9a45d;
+  --accent-2: #8bb0d9;
+  --good: #7dbb7d;
+  --warn: #d3a35c;
+  --bad: #c46b6b;
+  --shadow: rgba(0, 0, 0, 0.35);
+}
 
 * {
   box-sizing: border-box;
@@ -8,8 +25,10 @@
 body {
   margin: 0;
   padding: 16px;
-  background: #e9e9e9;
-  color: #000;
+  background:
+    radial-gradient(circle at top, rgba(85, 96, 110, 0.18), transparent 40%),
+    linear-gradient(180deg, #161a1f 0%, #0f1216 100%);
+  color: var(--text);
   font-family: Arial, Helvetica, sans-serif;
   font-size: 12px;
 }
@@ -17,8 +36,11 @@ body {
 .sheet {
   max-width: 1280px;
   margin: 0 auto;
-  background: #fff;
-  border: 1px solid #000;
+  background: linear-gradient(180deg, #1a1f25 0%, #171b20 100%);
+  border: 1px solid var(--line-bright);
+  box-shadow:
+    0 0 0 2px rgba(0, 0, 0, 0.35),
+    0 20px 50px rgba(0, 0, 0, 0.35);
   padding: 16px;
 }
 
@@ -28,42 +50,60 @@ body {
   align-items: flex-start;
   gap: 16px;
   margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
 }
 
 h1 {
   margin: 0 0 4px 0;
-  font-size: 26px;
-  letter-spacing: 0.5px;
+  font-size: 28px;
+  letter-spacing: 1px;
+  color: var(--heading);
+  text-shadow: 0 1px 0 #000;
 }
 
 h2 {
   margin: 0 0 8px 0;
-  padding-bottom: 4px;
-  border-bottom: 1px solid #000;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
   font-size: 14px;
   font-weight: 700;
+  color: var(--heading);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
 }
 
 .subtle {
   font-size: 12px;
+  color: var(--muted);
 }
 
 .save-panel {
-  min-width: 180px;
+  min-width: 190px;
   text-align: right;
   font-size: 12px;
+  color: var(--muted);
+}
+
+#saveStatus {
+  margin-top: 4px;
+  font-weight: 700;
+  color: var(--accent);
 }
 
 button {
-  border: 1px solid #000;
-  background: #fff;
-  padding: 4px 12px;
+  border: 1px solid #7e6a42;
+  background: linear-gradient(180deg, #4e4126 0%, #3c311d 100%);
+  color: #f1e4bf;
+  padding: 5px 14px;
   font-weight: 700;
   cursor: pointer;
+  border-radius: 3px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
 }
 
 button:hover {
-  background: #f1f1f1;
+  background: linear-gradient(180deg, #5b4b2d 0%, #473921 100%);
 }
 
 button:disabled {
@@ -72,10 +112,11 @@ button:disabled {
 }
 
 .boxed {
-  border: 1px solid #000;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
   padding: 10px;
   margin-bottom: 12px;
-  background: #fff;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
 }
 
 .top-grid {
@@ -99,23 +140,26 @@ label {
   display: block;
   font-weight: 700;
   margin-bottom: 4px;
+  color: #d8d3c6;
 }
 
 input,
 select,
 textarea {
   width: 100%;
-  border: 1px solid #000;
-  background: #fff;
-  color: #000;
+  border: 1px solid #49525c;
+  background: #11161b;
+  color: var(--text);
   font-family: Arial, Helvetica, sans-serif;
   font-size: 12px;
+  border-radius: 3px;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.35);
 }
 
 input,
 select {
-  height: 27px;
-  padding: 3px 6px;
+  height: 28px;
+  padding: 4px 6px;
   margin-top: 3px;
 }
 
@@ -127,7 +171,16 @@ textarea {
   min-height: 60px;
   padding: 6px;
   resize: vertical;
-  line-height: 1.25;
+  line-height: 1.3;
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+button:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(201, 164, 93, 0.35);
 }
 
 .stat-grid {
@@ -144,8 +197,10 @@ textarea {
   margin: 8px 0 0 0;
   font-size: 11px;
   font-style: italic;
+  color: var(--muted);
 }
 
+/* TABLE */
 .sheet-table {
   width: 100%;
   border-collapse: collapse;
@@ -154,7 +209,7 @@ textarea {
 
 .sheet-table th,
 .sheet-table td {
-  border: 1px solid #000;
+  border: 1px solid var(--line);
   padding: 5px;
   vertical-align: top;
 }
@@ -162,16 +217,23 @@ textarea {
 .sheet-table th {
   text-align: center;
   font-size: 11px;
-  background: #f5f5f5;
+  background: #151a1f;
+  color: var(--heading);
+  letter-spacing: 0.4px;
+}
+
+.sheet-table td {
+  background: rgba(255,255,255,0.015);
 }
 
 .sheet-table td:first-child {
-  width: 140px;
+  width: 150px;
   font-weight: 700;
+  color: #ddd7c8;
 }
 
 .sheet-table td:nth-child(2) {
-  width: 54px;
+  width: 58px;
 }
 
 .sheet-table td:nth-child(2) input {
@@ -182,10 +244,18 @@ textarea {
 .sheet-table textarea {
   min-height: 52px;
   border: none;
+  background: transparent;
+  box-shadow: none;
   padding: 4px;
   resize: vertical;
 }
 
+.sheet-table textarea:focus {
+  border: 1px solid var(--accent);
+  background: rgba(255,255,255,0.03);
+}
+
+/* TEXTAREA ROWS */
 .three-textareas {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -193,33 +263,164 @@ textarea {
 }
 
 .three-textareas textarea {
-  min-height: 140px;
-}
-
-.large-notes {
   min-height: 150px;
 }
 
-#saveStatus {
-  margin-top: 4px;
+.large-notes {
+  min-height: 165px;
+}
+
+/* SECTION ACCENTS */
+.left-col .boxed h2,
+.right-col .boxed h2 {
+  border-bottom-color: #55606c;
+}
+
+/* RESOURCE COLORS */
+input[data-field="platinum"] {
+  background: linear-gradient(180deg, #23303a 0%, #172029 100%);
+  border-color: #6ba4c8;
+  color: #d8f1ff;
+}
+
+input[data-field="wood"] {
+  background: linear-gradient(180deg, #3a281c 0%, #2a1d14 100%);
+  border-color: #8c5b33;
+  color: #f0d8bc;
+}
+
+input[data-field="stone"] {
+  background: linear-gradient(180deg, #2f353b 0%, #24292e 100%);
+  border-color: #7c8894;
+  color: #d7dde3;
+}
+
+input[data-field="ore"] {
+  background: linear-gradient(180deg, #31373f 0%, #252a31 100%);
+  border-color: #8b98a5;
+  color: #dce6f0;
+}
+
+input[data-field="food"] {
+  background: linear-gradient(180deg, #233323 0%, #1a261a 100%);
+  border-color: #6e9b52;
+  color: #ddf2d2;
+}
+
+input[data-field="medicine"] {
+  background: linear-gradient(180deg, #183336 0%, #14272a 100%);
+  border-color: #5aa0a8;
+  color: #d8f7f8;
+}
+
+input[data-field="influence"] {
+  background: linear-gradient(180deg, #352342 0%, #261a30 100%);
+  border-color: #8b67b0;
+  color: #f0dcff;
+}
+
+input[data-field="labor"] {
+  background: linear-gradient(180deg, #3a341f 0%, #2d2817 100%);
+  border-color: #b18d3e;
+  color: #f8e9b8;
+}
+
+/* POPULATION COLORS */
+input[data-field="citizens"],
+input[data-field="children"],
+input[data-field="workers"],
+input[data-field="militia"],
+input[data-field="specialists"],
+input[data-field="wounded"],
+input[data-field="refugees"],
+input[data-field="growthTimer"] {
+  background: #13191f;
+}
+
+input[data-field="militia"] {
+  border-color: #9d6f6f;
+  color: #ffd7d7;
+}
+
+input[data-field="workers"] {
+  border-color: #9b8a56;
+  color: #f2e7c5;
+}
+
+input[data-field="children"] {
+  border-color: #6b88b3;
+  color: #d8e5ff;
+}
+
+input[data-field="wounded"] {
+  border-color: #a15b5b;
+  color: #ffd6d6;
+}
+
+/* TOWN STATS COLORS */
+input[data-field="loyalty"] {
+  border-color: #8d74b2;
+  color: #eadcff;
+}
+
+input[data-field="stability"] {
+  border-color: #7a9bb5;
+  color: #d9efff;
+}
+
+input[data-field="security"] {
+  border-color: #b57373;
+  color: #ffdede;
+}
+
+input[data-field="prosperity"] {
+  border-color: #88a75a;
+  color: #ebffd6;
+}
+
+input[data-field="hope"] {
+  border-color: #d0aa62;
+  color: #fff0c9;
+}
+
+/* THREATS */
+input[data-field="templeAttention"],
+input[data-field="foodShortage"],
+input[data-field="raiderPressure"],
+input[data-field="publicFear"],
+input[data-field="markedDoorMystery"],
+input[data-field="seleneConflict"] {
+  background: linear-gradient(180deg, #311919 0%, #241313 100%);
+  border-color: #8a4f4f;
+  color: #ffd7d7;
+}
+
+/* BUILDING LEVEL INPUTS */
+input[data-building] {
+  background: linear-gradient(180deg, #2a2116 0%, #1f1810 100%);
+  border-color: #8e7243;
+  color: #f4e3b6;
   font-weight: 700;
 }
 
-/* Helpful visual grouping */
-.left-col .boxed:nth-child(1) h2 {
-  border-bottom-width: 2px;
+/* HEADER FIELDS */
+.top-grid input,
+.top-grid select {
+  background: #14191f;
 }
 
-.left-col .boxed:nth-child(2) h2 {
-  border-bottom-width: 2px;
+/* Scrollbar polish */
+textarea::-webkit-scrollbar {
+  width: 10px;
 }
 
-.left-col .boxed:nth-child(3) h2 {
-  border-bottom-width: 2px;
+textarea::-webkit-scrollbar-track {
+  background: #11161b;
 }
 
-.left-col .boxed:nth-child(4) h2 {
-  border-bottom-width: 2px;
+textarea::-webkit-scrollbar-thumb {
+  background: #49525c;
+  border-radius: 5px;
 }
 
 /* Mobile / smaller screens */
