@@ -4,8 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kareth Town Sheet</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="../chars/styles.css" />
 </head>
+
 <body>
   <main class="sheet">
     <header class="sheet-header">
@@ -15,7 +16,7 @@
       </div>
 
       <div class="save-panel">
-        <button id="saveBtn" type="button">Save</button>
+        <button id="saveBtn" type="button" disabled>Save</button>
         <div id="saveStatus">Loading…</div>
         <div>Last saved: <span id="lastSaved">—</span></div>
       </div>
@@ -121,6 +122,7 @@
       <div class="right-col">
         <section class="boxed">
           <h2>BUILDINGS</h2>
+
           <table class="sheet-table" id="buildingsTable">
             <thead>
               <tr>
@@ -130,6 +132,7 @@
                 <th>Next Upgrade</th>
               </tr>
             </thead>
+
             <tbody>
               <tr>
                 <td>Townhall</td>
@@ -137,54 +140,63 @@
                 <td><textarea data-field="townhallStatus">Command Table: unlocks town policies.</textarea></td>
                 <td><textarea data-field="townhallNext">Records Office: +1 Stability, better taxes and reports.</textarea></td>
               </tr>
+
               <tr>
                 <td>Storehouses</td>
                 <td><input data-building="storehouses" type="number" value="1" min="0" max="5" /></td>
                 <td><textarea data-field="storehousesStatus">Salvage Depot: basic storage for food, wood, and stone.</textarea></td>
                 <td><textarea data-field="storehousesNext">Guarded Stores: reduce theft and supply loss events.</textarea></td>
               </tr>
+
               <tr>
                 <td>Smith</td>
                 <td><input data-building="smith" type="number" value="0" min="0" max="5" /></td>
                 <td><textarea data-field="smithStatus">Wild Forge: unsafe and not fully usable.</textarea></td>
                 <td><textarea data-field="smithNext">Working Forge: basic tools, repairs, and rebuilding support.</textarea></td>
               </tr>
+
               <tr>
                 <td>Docks</td>
                 <td><input data-building="docks" type="number" value="1" min="0" max="5" /></td>
                 <td><textarea data-field="docksStatus">Safe Moorings: fishing and local boats resume.</textarea></td>
                 <td><textarea data-field="docksNext">Cargo Pier: generates Food and Platinum.</textarea></td>
               </tr>
+
               <tr>
                 <td>Roads</td>
                 <td><input data-building="roads" type="number" value="1" min="0" max="5" /></td>
                 <td><textarea data-field="roadsStatus">Cleared Paths: normal movement restored.</textarea></td>
                 <td><textarea data-field="roadsNext">Cart Roads: projects cost less Labor.</textarea></td>
               </tr>
+
               <tr>
                 <td>Windmill</td>
                 <td><input data-building="windmill" type="number" value="0" min="0" max="5" /></td>
                 <td><textarea data-field="windmillStatus">Razed Mill: no grain processing.</textarea></td>
                 <td><textarea data-field="windmillNext">Temporary Millstone: small Food income.</textarea></td>
               </tr>
+
               <tr>
                 <td>Healer’s House</td>
                 <td><input data-building="healersHouse" type="number" value="1" min="0" max="5" /></td>
                 <td><textarea data-field="healersHouseStatus">Healer’s Room: wounded recover each turn.</textarea></td>
                 <td><textarea data-field="healersHouseNext">Clinic: better recovery and efficient Medicine use.</textarea></td>
               </tr>
+
               <tr>
                 <td>Guard Barracks</td>
                 <td><input data-building="guardBarracks" type="number" value="0" min="0" max="5" /></td>
                 <td><textarea data-field="guardBarracksStatus">No Barracks: militia disorganized.</textarea></td>
                 <td><textarea data-field="guardBarracksNext">Watch Post: unlocks patrols.</textarea></td>
               </tr>
+
               <tr>
                 <td>Housing District</td>
                 <td><input data-building="housingDistrict" type="number" value="1" min="0" max="5" /></td>
                 <td><textarea data-field="housingDistrictStatus">Emergency Shelter: prevents homelessness crisis.</textarea></td>
                 <td><textarea data-field="housingDistrictNext">Repaired Homes: supports current population.</textarea></td>
               </tr>
+
               <tr>
                 <td>Party Command House</td>
                 <td><input data-building="partyCommandHouse" type="number" value="0" min="0" max="5" /></td>
@@ -202,6 +214,7 @@
 Secure the Storehouses
 Clear Main Roads</textarea>
           </div>
+
           <div>
             <h2>POLICIES</h2>
             <textarea data-field="policies">Labor Policy: Paid Labor First
@@ -209,6 +222,7 @@ Ration Policy: Normal Rations
 Security Policy: Volunteer Watch
 Refugee Policy: Limited Shelter</textarea>
           </div>
+
           <div>
             <h2>COUNCIL LOG</h2>
             <textarea data-field="councilLog">Turn 1:
@@ -226,6 +240,7 @@ Refugee Policy: Limited Shelter</textarea>
       </div>
     </section>
   </main>
-<script type="module" src="town.js"></script>
+
+  <script type="module" src="kareth.js"></script>
 </body>
 </html>
