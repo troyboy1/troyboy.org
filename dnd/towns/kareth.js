@@ -43,7 +43,7 @@ let autosaveTimer = null;
 let isSaving = false;
 let pendingSave = false;
 
-const AUTOSAVE_DELAY_MS = 1500;
+const AUTOSAVE_DELAY_MS = 300000;
 
 const DEFAULT_TOWN = {
   name: "Kareth",
