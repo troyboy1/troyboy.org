@@ -101,6 +101,7 @@ const DEFAULT_TOWN = {
     windmill: 0,
     healersHouse: 1,
     guardBarracks: 0,
+    prison: 0,
     housingDistrict: 1,
     partyCommandHouse: 0,
   },
@@ -129,6 +130,9 @@ const DEFAULT_TOWN = {
 
     guardBarracksStatus: "No Barracks: militia disorganized.",
     guardBarracksNext: "Watch Post: unlocks patrols.",
+
+    prisonStatus: "Temporary Holding: capacity 2 prisoners. Requires 1 Guard per prisoner.",
+    prisonNext: "Holding Cells: capacity 6 prisoners. Requires 1 Guard per 3 prisoners.",
 
     housingDistrictStatus: "Emergency Shelter: prevents homelessness crisis.",
     housingDistrictNext: "Repaired Homes: supports current population.",
@@ -207,6 +211,8 @@ const FIELD_PATHS = {
   healersHouseNext: ["text", "healersHouseNext"],
   guardBarracksStatus: ["text", "guardBarracksStatus"],
   guardBarracksNext: ["text", "guardBarracksNext"],
+  prisonStatus: ["text", "prisonStatus"],
+  prisonNext: ["text", "prisonNext"],  
   housingDistrictStatus: ["text", "housingDistrictStatus"],
   housingDistrictNext: ["text", "housingDistrictNext"],
   partyCommandHouseStatus: ["text", "partyCommandHouseStatus"],
