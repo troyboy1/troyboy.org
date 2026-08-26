@@ -17,7 +17,7 @@
       </div>
       <div class="save-status" id="saveStatus" aria-live="polite">
         <span class="save-dot"></span>
-        <span>Saved locally</span>
+        <span>Connecting…</span>
       </div>
     </header>
 
@@ -72,7 +72,7 @@
           <button class="btn btn-primary" type="submit">Add</button>
         </form>
 
-        <p class="drag-help">Drag a person onto a seat. Drag a seated person to another seat to move or swap them.</p>
+        <p class="drag-help">Drag a person onto a numbered seat. On touch devices, use the ⋮⋮ drag grip. You can also tap any empty seat to choose a guest.</p>
 
         <div id="guestList" class="guest-list" tabindex="0" aria-label="Guest list"></div>
       </aside>
@@ -84,8 +84,9 @@
             <h2>Grand Ballroom</h2>
           </div>
           <div class="chart-actions">
+            <button class="btn btn-soft btn-compact" id="fitRoomBtn" type="button">Fit room</button>
             <label for="zoomRange">Zoom</label>
-            <input id="zoomRange" type="range" min="70" max="125" value="100" step="5" />
+            <input id="zoomRange" type="range" min="45" max="140" value="100" step="5" />
             <span id="zoomValue">100%</span>
           </div>
         </div>
@@ -94,6 +95,12 @@
           <div><span class="room-dot room-east-dot"></span><strong>East</strong><span>110 max rounds · 1,734 sq ft</span></div>
           <div><span class="room-dot room-center-dot"></span><strong>Center</strong><span>100 max rounds · 2,040 sq ft</span></div>
           <div><span class="room-dot room-west-dot"></span><strong>West</strong><span>90 max rounds · 1,620 sq ft</span></div>
+        </div>
+
+        <div class="room-nav" aria-label="Jump to room">
+          <button class="btn btn-soft" type="button" data-jump-room="east">East Room</button>
+          <button class="btn btn-soft" type="button" data-jump-room="center">Center Room</button>
+          <button class="btn btn-soft" type="button" data-jump-room="west">West Room</button>
         </div>
 
         <div class="canvas-scroll" id="canvasScroll">
@@ -180,14 +187,66 @@
 
   <template id="guestTemplate">
     <div class="guest-card" draggable="true">
-      <div class="guest-main">
-        <strong class="guest-name"></strong>
-        <span class="guest-meta"></span>
-      </div>
+      <button class="guest-drag-grip" type="button" aria-label="Drag guest to a seat" title="Drag to a seat">⋮⋮</button>
+      <button class="guest-open" type="button" aria-label="Open guest profile">
+        <span class="guest-main">
+          <strong class="guest-name"></strong>
+          <span class="guest-meta"></span>
+        </span>
+      </button>
       <button class="guest-remove" type="button" aria-label="Remove guest">×</button>
     </div>
   </template>
 
+  <dialog id="guestDialog" class="modal small-modal">
+    <form method="dialog" class="modal-card" id="guestForm">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">Guest profile</p>
+          <h2 id="guestDialogTitle">Guest</h2>
+        </div>
+        <button class="icon-btn" value="cancel" aria-label="Close">×</button>
+      </div>
+      <input id="editingGuestId" type="hidden" />
+      <div id="guestAssignmentSummary" class="assignment-summary"></div>
+      <label class="field-label" for="guestNameInput">Name</label>
+      <input id="guestNameInput" type="text" required />
+      <label class="field-label" for="guestGroupInput">Group / family</label>
+      <input id="guestGroupInput" type="text" placeholder="e.g. Smith Family" />
+      <label class="field-label" for="guestMealInput">Meal</label>
+      <input id="guestMealInput" type="text" placeholder="e.g. Chicken" />
+      <label class="field-label" for="guestNotesInput">Notes</label>
+      <textarea id="guestNotesInput" rows="4" placeholder="Optional notes"></textarea>
+      <div class="modal-actions split-actions">
+        <div class="danger-actions">
+          <button class="btn btn-danger-ghost" id="unseatGuestBtn" type="button">Unseat</button>
+          <button class="btn btn-danger-ghost" id="deleteGuestBtn" type="button">Delete guest</button>
+        </div>
+        <div>
+          <button class="btn btn-soft" value="cancel" type="button" id="cancelGuestBtn">Cancel</button>
+          <button class="btn btn-primary" value="default" type="submit">Save profile</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="assignDialog" class="modal small-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">Seat assignment</p>
+          <h2 id="assignDialogTitle">Choose a guest</h2>
+        </div>
+        <button class="icon-btn" id="closeAssignBtn" type="button" aria-label="Close">×</button>
+      </div>
+      <p id="assignSeatSummary"></p>
+      <input id="assignGuestSearch" type="search" placeholder="Search guests…" autocomplete="off" />
+      <div id="assignGuestList" class="assign-guest-list"></div>
+    </div>
+  </dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
