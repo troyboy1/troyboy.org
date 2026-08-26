@@ -105,6 +105,7 @@
           <div><span class="room-dot room-center-dot"></span><strong>Center</strong><span>~55×37 ft · 2,040 sq ft</span></div>
           <div><span class="room-dot room-west-dot"></span><strong>West</strong><span>~44×37 ft · 1,620 sq ft</span></div>
         </div>
+        <p class="open-room-note">East, Center, and West are shown as one continuous open ballroom. Dashed guides only mark the approximate former room divisions.</p>
 
         <div class="room-nav" aria-label="Jump to room">
           <button class="btn btn-soft" type="button" data-jump-room="east">East Room</button>
@@ -115,6 +116,17 @@
         <div class="canvas-scroll" id="canvasScroll">
           <div class="canvas-zoom" id="canvasZoom">
             <div id="floorCanvas" class="floor-canvas" aria-label="Wedding seating floor plan">
+              <svg class="ballroom-blueprint" viewBox="0 0 1700 720" preserveAspectRatio="none" aria-hidden="true">
+                <path class="ballroom-floor-fill" d="M80 250 H600 V140 H1150 V250 H1590 V620 H1150 V510 H600 V580 H80 Z"></path>
+                <path class="ballroom-outline-line" d="M80 250 H600 V140 H1150 V250 H1590 V620 H1150 V510 H600 V580 H80 Z"></path>
+                <line class="room-guide" x1="600" y1="250" x2="600" y2="510"></line>
+                <line class="room-guide" x1="1150" y1="250" x2="1150" y2="510"></line>
+
+                <path class="venue-reference-outline" d="M80 250 V150 H330 V250"></path>
+                <path class="venue-reference-outline" d="M735 140 V95 H1015 V140"></path>
+                <path class="venue-reference-outline" d="M1370 250 V150 H1590 V250"></path>
+              </svg>
+
               <div class="venue-label venue-label-left">Balcony</div>
               <div class="venue-label venue-label-center">Veranda</div>
               <div class="venue-label venue-label-right">Balcony</div>
@@ -129,9 +141,18 @@
                 <div class="room-title"><strong>West Room</strong><span>~44 × 37 ft</span></div>
               </section>
 
-              <div class="door door-east-center">⇅</div>
-              <div class="door door-center-west">⇅</div>
-              <div class="prefunction-label">Pre-Function Area / hallway</div>
+              <div class="fixed-feature fixed-photo-booth" aria-label="Photo Booth reserved area">
+                <strong>Photo Booth</strong>
+                <span>Reserved</span>
+              </div>
+              <div class="fixed-feature fixed-dj" aria-label="DJ reserved area">
+                <strong>DJ</strong>
+              </div>
+              <div class="fixed-feature fixed-bar" aria-label="Bar location">
+                <strong>Bar</strong>
+              </div>
+
+              <div class="prefunction-label">Pre-Function Area</div>
 
               <div id="tableLayer" class="table-layer"></div>
             </div>
