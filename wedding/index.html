@@ -1,1 +1,193 @@
-text
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#6f2438" />
+  <title>Wedding Seating Planner</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Arrowhead Grand Ballroom</p>
+        <h1>Wedding Seating Planner</h1>
+        <p class="subtitle">East Room · Center Room · West Room</p>
+      </div>
+      <div class="save-status" id="saveStatus" aria-live="polite">
+        <span class="save-dot"></span>
+        <span>Saved locally</span>
+      </div>
+    </header>
+
+    <section class="toolbar" aria-label="Seating chart controls">
+      <div class="toolbar-group">
+        <label for="targetRoom">Add to</label>
+        <select id="targetRoom">
+          <option value="east">East Room</option>
+          <option value="center" selected>Center Room</option>
+          <option value="west">West Room</option>
+        </select>
+        <button class="btn" id="add8Btn" type="button">+ 8-seat table</button>
+        <button class="btn" id="add10Btn" type="button">+ 10-seat table</button>
+        <button class="btn" id="addHeadBtn" type="button">+ 22-seat head table</button>
+      </div>
+      <div class="toolbar-group toolbar-group-right">
+        <button class="btn btn-soft" id="autoPlaceBtn" type="button">Auto-place tables</button>
+        <button class="btn btn-soft" id="exportBtn" type="button">Export backup</button>
+        <label class="btn btn-soft file-button" for="importFile">Import backup</label>
+        <input id="importFile" class="visually-hidden" type="file" accept="application/json,.json" />
+        <button class="btn btn-danger-ghost" id="resetBtn" type="button">Reset</button>
+      </div>
+    </section>
+
+    <main class="workspace">
+      <aside class="guest-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Guest list</p>
+            <h2>People</h2>
+          </div>
+          <button class="icon-btn" id="openBulkBtn" type="button" title="Paste a guest list" aria-label="Paste a guest list">＋</button>
+        </div>
+
+        <div class="guest-stats">
+          <div><strong id="totalGuests">0</strong><span>Total</span></div>
+          <div><strong id="seatedGuests">0</strong><span>Seated</span></div>
+          <div><strong id="unseatedGuests">0</strong><span>Unseated</span></div>
+        </div>
+
+        <div class="search-row">
+          <input id="guestSearch" type="search" placeholder="Search guests…" autocomplete="off" />
+          <select id="guestFilter" aria-label="Filter guests">
+            <option value="all">All</option>
+            <option value="unseated">Unseated</option>
+            <option value="seated">Seated</option>
+          </select>
+        </div>
+
+        <form id="quickAddForm" class="quick-add">
+          <input id="quickAddName" type="text" placeholder="Add one guest…" autocomplete="off" />
+          <button class="btn btn-primary" type="submit">Add</button>
+        </form>
+
+        <p class="drag-help">Drag a person onto a seat. Drag a seated person to another seat to move or swap them.</p>
+
+        <div id="guestList" class="guest-list" tabindex="0" aria-label="Guest list"></div>
+      </aside>
+
+      <section class="chart-panel">
+        <div class="chart-header">
+          <div>
+            <p class="eyebrow">Interactive floor plan</p>
+            <h2>Grand Ballroom</h2>
+          </div>
+          <div class="chart-actions">
+            <label for="zoomRange">Zoom</label>
+            <input id="zoomRange" type="range" min="70" max="125" value="100" step="5" />
+            <span id="zoomValue">100%</span>
+          </div>
+        </div>
+
+        <div class="room-capacity-strip" aria-label="Official room capacity references">
+          <div><span class="room-dot room-east-dot"></span><strong>East</strong><span>110 max rounds · 1,734 sq ft</span></div>
+          <div><span class="room-dot room-center-dot"></span><strong>Center</strong><span>100 max rounds · 2,040 sq ft</span></div>
+          <div><span class="room-dot room-west-dot"></span><strong>West</strong><span>90 max rounds · 1,620 sq ft</span></div>
+        </div>
+
+        <div class="canvas-scroll" id="canvasScroll">
+          <div class="canvas-zoom" id="canvasZoom">
+            <div id="floorCanvas" class="floor-canvas" aria-label="Wedding seating floor plan">
+              <div class="venue-label venue-label-left">Balcony</div>
+              <div class="venue-label venue-label-center">Veranda</div>
+              <div class="venue-label venue-label-right">Balcony</div>
+
+              <section class="room room-east" data-room="east">
+                <div class="room-title"><strong>East Room</strong><span>official max: 110 rounds</span></div>
+              </section>
+              <section class="room room-center" data-room="center">
+                <div class="room-title"><strong>Center Room</strong><span>official max: 100 rounds</span></div>
+              </section>
+              <section class="room room-west" data-room="west">
+                <div class="room-title"><strong>West Room</strong><span>official max: 90 rounds</span></div>
+              </section>
+
+              <div class="door door-east-center">⇅</div>
+              <div class="door door-center-west">⇅</div>
+              <div class="prefunction-label">Pre-Function Area / hallway</div>
+
+              <div id="tableLayer" class="table-layer"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="legend">
+          <span><i class="legend-seat empty"></i> Empty seat</span>
+          <span><i class="legend-seat occupied"></i> Assigned guest</span>
+          <span><i class="legend-seat special"></i> Bride/Groom position</span>
+          <span>Tables snap to a 10 px grid when moved.</span>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="bulkDialog" class="modal">
+    <form method="dialog" class="modal-card" id="bulkForm">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">Guest import</p>
+          <h2>Paste your guest list</h2>
+        </div>
+        <button class="icon-btn" value="cancel" aria-label="Close">×</button>
+      </div>
+      <p>Enter one person per line. You can optionally use <code>Name | Group | Meal</code>.</p>
+      <textarea id="bulkGuestText" rows="14" placeholder="Alex Smith | Smith Family | Chicken&#10;Jordan Lee | College Friends | Vegetarian&#10;Taylor Morgan"></textarea>
+      <div class="modal-actions">
+        <button class="btn btn-soft" value="cancel" type="button" id="cancelBulkBtn">Cancel</button>
+        <button class="btn btn-primary" value="default" type="submit">Add guests</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="tableDialog" class="modal small-modal">
+    <form method="dialog" class="modal-card" id="tableForm">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">Table settings</p>
+          <h2 id="tableDialogTitle">Edit table</h2>
+        </div>
+        <button class="icon-btn" value="cancel" aria-label="Close">×</button>
+      </div>
+      <input id="editingTableId" type="hidden" />
+      <label class="field-label" for="tableNameInput">Table name</label>
+      <input id="tableNameInput" type="text" />
+      <label class="field-label" for="tableRoomInput">Room</label>
+      <select id="tableRoomInput">
+        <option value="east">East Room</option>
+        <option value="center">Center Room</option>
+        <option value="west">West Room</option>
+      </select>
+      <div class="modal-actions split-actions">
+        <button class="btn btn-danger-ghost" id="deleteTableBtn" type="button">Delete table</button>
+        <div>
+          <button class="btn btn-soft" value="cancel" type="button" id="cancelTableBtn">Cancel</button>
+          <button class="btn btn-primary" value="default" type="submit">Save changes</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <template id="guestTemplate">
+    <div class="guest-card" draggable="true">
+      <div class="guest-main">
+        <strong class="guest-name"></strong>
+        <span class="guest-meta"></span>
+      </div>
+      <button class="guest-remove" type="button" aria-label="Remove guest">×</button>
+    </div>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
