@@ -287,13 +287,13 @@ textarea { padding: 10px 12px; resize: vertical; }
   background: #ded9d6;
   box-shadow: var(--shadow);
   max-height: calc(100vh - 350px);
-  min-height: 500px;
+  min-height: 430px;
 }
 .canvas-zoom { width: max-content; transform-origin: 0 0; }
 .floor-canvas {
   position: relative;
-  width: 1480px;
-  height: 850px;
+  width: 1580px;
+  height: 700px;
   background:
     linear-gradient(rgba(255,255,255,.64), rgba(255,255,255,.64)),
     repeating-linear-gradient(0deg, transparent 0 19px, rgba(96,83,87,.035) 20px),
@@ -320,9 +320,9 @@ textarea { padding: 10px 12px; resize: vertical; }
   background: repeating-linear-gradient(90deg, #918689 0 3px, transparent 3px 20px);
   opacity: .65;
 }
-.room-east { left: 30px; top: 185px; width: 445px; height: 520px; background: var(--east); }
-.room-center { left: 470px; top: 90px; width: 540px; height: 520px; background: var(--center); }
-.room-west { left: 1005px; top: 185px; width: 445px; height: 520px; background: var(--west); }
+.room-east { left: 30px; top: 190px; width: 520px; height: 330px; background: var(--east); }
+.room-center { left: 548px; top: 150px; width: 550px; height: 370px; background: var(--center); }
+.room-west { left: 1096px; top: 190px; width: 440px; height: 370px; background: var(--west); }
 .room.drag-over { outline: 5px solid rgba(118,39,61,.18); outline-offset: -8px; }
 
 .room-title {
@@ -340,14 +340,14 @@ textarea { padding: 10px 12px; resize: vertical; }
 }
 .room-title strong { font-size: 12px; }
 .room-title span { font-size: 9px; color: var(--muted); }
-.venue-label { position: absolute; top: 130px; color: #685e61; font-size: 12px; font-style: italic; }
-.venue-label-left { left: 185px; }
-.venue-label-center { left: 700px; top: 42px; }
-.venue-label-right { right: 180px; }
-.prefunction-label { position: absolute; left: 640px; top: 755px; color: #7b7174; font-size: 13px; letter-spacing: .05em; }
+.venue-label { position: absolute; top: 132px; color: #685e61; font-size: 12px; font-style: italic; }
+.venue-label-left { left: 225px; }
+.venue-label-center { left: 790px; top: 94px; }
+.venue-label-right { right: 190px; }
+.prefunction-label { position: absolute; left: 690px; top: 590px; color: #7b7174; font-size: 13px; letter-spacing: .05em; }
 .door { position: absolute; z-index: 2; display: grid; place-items: center; width: 32px; height: 52px; border: 2px solid #8b8083; border-top: 0; border-bottom: 0; color: #9b8e91; font-size: 16px; background: #f5f1ee; }
-.door-east-center { left: 457px; top: 530px; }
-.door-center-west { left: 992px; top: 530px; }
+.door-east-center { left: 534px; top: 422px; }
+.door-center-west { left: 1082px; top: 422px; }
 
 .table-layer { position: absolute; inset: 0; z-index: 10; pointer-events: none; }
 .table-item { position: absolute; pointer-events: auto; user-select: none; }
@@ -355,8 +355,8 @@ textarea { padding: 10px 12px; resize: vertical; }
 .table-item.room-east .table-surface { background: #fffaf6; }
 .table-item.room-center .table-surface { background: #f8fcf6; }
 .table-item.room-west .table-surface { background: #f8faff; }
-.round-table { width: 112px; height: 112px; }
-.head-table { width: 520px; height: 128px; }
+.round-table { width: 100px; height: 100px; }
+.head-table { width: 280px; height: 76px; }
 
 .table-surface {
   position: absolute;
@@ -364,8 +364,25 @@ textarea { padding: 10px 12px; resize: vertical; }
   background: white;
   box-shadow: 0 3px 9px rgba(39,35,41,.11);
 }
-.round-table .table-surface { inset: 22px; border-radius: 50%; }
-.head-table .table-surface { inset: 38px 28px; border-radius: 8px; }
+.round-table .table-surface {
+  width: 60px;
+  height: 60px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+}
+.round-table[data-capacity="8"] .table-surface {
+  width: 50px;
+  height: 50px;
+}
+.head-table .table-surface {
+  left: 10px;
+  right: 10px;
+  top: 23px;
+  height: 30px;
+  border-radius: 5px;
+}
 
 .table-drag-handle {
   position: absolute;
@@ -377,10 +394,22 @@ textarea { padding: 10px 12px; resize: vertical; }
   gap: 1px;
   cursor: move;
 }
-.round-table .table-drag-handle { left: 28px; top: 28px; width: 56px; height: 56px; }
-.head-table .table-drag-handle { left: 178px; top: 30px; width: 164px; height: 68px; }
+.round-table .table-drag-handle {
+  left: 50%;
+  top: 50%;
+  width: 54px;
+  height: 54px;
+  transform: translate(-50%, -50%);
+}
+.round-table[data-capacity="8"] .table-drag-handle { width: 46px; height: 46px; }
+.head-table .table-drag-handle {
+  left: 88px;
+  top: 20px;
+  width: 104px;
+  height: 36px;
+}
 .table-drag-handle strong { max-width: 54px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 9px; line-height: 1.05; text-align: center; }
-.head-table .table-drag-handle strong { max-width: 150px; font-size: 11px; }
+.head-table .table-drag-handle strong { max-width: 96px; font-size: 9px; }
 .table-drag-handle > span { color: var(--muted); font-size: 7px; }
 .table-inline-actions { display: flex; align-items: center; gap: 2px; margin-top: 2px; }
 .table-mini-btn {
@@ -396,13 +425,13 @@ textarea { padding: 10px 12px; resize: vertical; }
   line-height: 15px;
 }
 .table-mini-delete { width: 17px; padding: 0; color: #a3233c; border-color: #ecd1d7; }
-.head-table .table-mini-btn { height: 21px; padding: 0 6px; font-size: 9px; line-height: 19px; }
-.head-table .table-mini-delete { width: 21px; padding: 0; }
+.head-table .table-mini-btn { height: 17px; padding: 0 4px; font-size: 7px; line-height: 15px; }
+.head-table .table-mini-delete { width: 17px; padding: 0; }
 
 .seat {
   position: absolute;
-  width: 24px;
-  height: 24px;
+  width: 18px;
+  height: 18px;
   display: grid;
   place-items: center;
   padding: 0;
@@ -410,7 +439,7 @@ textarea { padding: 10px 12px; resize: vertical; }
   border-radius: 50%;
   background: var(--seat);
   color: var(--ink);
-  font-size: 7px;
+  font-size: 6px;
   line-height: 1;
   text-align: center;
   z-index: 6;
@@ -423,10 +452,10 @@ textarea { padding: 10px 12px; resize: vertical; }
 .seat.drag-over { transform: scale(1.28); box-shadow: 0 0 0 5px rgba(118,39,61,.16); }
 .seat-number {
   position: absolute;
-  top: 2px;
+  top: 1px;
   left: 0;
   right: 0;
-  font-size: 7px;
+  font-size: 6px;
   font-weight: 900;
   color: #81777a;
   line-height: 1;
