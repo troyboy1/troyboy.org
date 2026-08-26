@@ -7,14 +7,13 @@
   const CLOUD_SAVE_DELAY = 650;
   const GRID = 10;
 
-  // V3 real-world scale model.
-  // Approximate room dimensions are inferred from Arrowhead's published square footage
-  // plus the proportions of its official floor-plan drawing:
-  // East ~52x33 ft, Center ~55x37 ft, West ~44x37 ft.
-  // We render at 10 px per foot, so the 10 px drag grid is approximately 1 foot.
+  // V4 floor-plan model.
+  // East, Center, and West are one continuous open ballroom. The approximate room
+  // dimensions still come from Arrowhead's published square footage plus the
+  // proportions of the official floor-plan drawing. We render at ~10 px per foot.
   const PX_PER_FOOT = 10;
-  const CANVAS_W = 1580;
-  const CANVAS_H = 700;
+  const CANVAS_W = 1700;
+  const CANVAS_H = 720;
 
   // Table footprints include chairs, while the table surface itself is drawn to scale.
   // 8-person round: ~5 ft tabletop / ~9 ft occupied footprint.
@@ -30,12 +29,26 @@
   const ROUND_GRID = 110;
 
   const ROOM_BOUNDS = {
-    east:   { x: 30,   y: 190, w: 520, h: 330, feetW: 52, feetH: 33 },
-    center: { x: 548,  y: 150, w: 550, h: 370, feetW: 55, feetH: 37 },
-    west:   { x: 1096, y: 190, w: 440, h: 370, feetW: 44, feetH: 37 }
+    east:   { x: 80,   y: 250, w: 520, h: 330, feetW: 52, feetH: 33 },
+    center: { x: 600,  y: 140, w: 550, h: 370, feetW: 55, feetH: 37 },
+    west:   { x: 1150, y: 250, w: 440, h: 370, feetW: 44, feetH: 37 }
   };
 
-  // Previous V2 layout, used only to preserve saved table positions during migration.
+  // Fixed venue items from the supplied Arrowhead floor-plan markup.
+  // Auto-placement skips these footprints so a new table is not placed on top of them.
+  const RESERVED_ZONES = [
+    { room: 'east', x: 92, y: 345, w: 76, h: 100, label: 'Photo Booth' },
+    { room: 'center', x: 930, y: 455, w: 90, h: 44, label: 'DJ' }
+  ];
+
+  // Previous V3 layout, used only to preserve saved table positions during migration.
+  const V3_ROOM_BOUNDS = {
+    east:   { x: 30,   y: 190, w: 520, h: 330 },
+    center: { x: 548,  y: 150, w: 550, h: 370 },
+    west:   { x: 1096, y: 190, w: 440, h: 370 }
+  };
+
+  // Previous V2 layout, used only to preserve older saved table positions during migration.
   const V2_ROOM_BOUNDS = {
     east:   { x: 30,   y: 185, w: 445, h: 520 },
     center: { x: 470,  y: 90,  w: 540, h: 520 },
@@ -1486,7 +1499,7 @@
 
   function emptyState() {
     return {
-      version: 3,
+      version: 4,
       guests: [],
       tables: [],
       counters: { table: 1 },
@@ -1540,13 +1553,17 @@
       if (table.seats.length > table.capacity) table.seats = table.seats.slice(0, table.capacity);
     });
 
-    if (previousVersion < 3 && state.tables.length) migrateTablePositions(previousVersion);
-    state.version = 3;
+    if (previousVersion < 4 && state.tables.length) migrateTablePositions(previousVersion);
+    state.version = 4;
   }
 
   function migrateTablePositions(previousVersion) {
     state.tables.forEach(table => {
-      const oldBoundsMap = previousVersion < 2 ? V1_ROOM_BOUNDS : V2_ROOM_BOUNDS;
+      const oldBoundsMap = previousVersion < 2
+        ? V1_ROOM_BOUNDS
+        : previousVersion < 3
+          ? V2_ROOM_BOUNDS
+          : V3_ROOM_BOUNDS;
       const oldBounds = oldBoundsMap[table.room] || oldBoundsMap.center;
       const newBounds = ROOM_BOUNDS[table.room] || ROOM_BOUNDS.center;
 
@@ -1555,9 +1572,13 @@
       if (previousVersion < 2) {
         oldW = table.type === 'head' ? 460 : 164;
         oldH = table.type === 'head' ? 150 : 164;
-      } else {
+      } else if (previousVersion < 3) {
         oldW = table.type === 'head' ? 520 : 112;
         oldH = table.type === 'head' ? 128 : 112;
+      } else {
+        const previousDims = getTableDimensions(table);
+        oldW = previousDims.w;
+        oldH = previousDims.h;
       }
 
       const { w: newW, h: newH } = getTableDimensions(table);
@@ -1898,6 +1919,57 @@
     commit({ message: 'Table deleted' });
   }
 
+  function rectanglesOverlap(a, b, padding = 0) {
+    return !(
+      a.x + a.w + padding <= b.x ||
+      b.x + b.w + padding <= a.x ||
+      a.y + a.h + padding <= b.y ||
+      b.y + b.h + padding <= a.y
+    );
+  }
+
+  function positionHitsReserved(room, x, y, w, h) {
+    const candidate = { x, y, w, h };
+    return RESERVED_ZONES.some(zone =>
+      zone.room === room && rectanglesOverlap(candidate, zone, 8)
+    );
+  }
+
+  function getRoundSlot(room, ordinal, dims, startY = null) {
+    const bounds = ROOM_BOUNDS[room];
+    const cols = Math.max(1, Math.floor((bounds.w - 20) / ROUND_GRID));
+    const baseY = startY ?? (bounds.y + 54);
+    let validIndex = 0;
+
+    for (let slot = 0; slot < 80; slot++) {
+      const col = slot % cols;
+      const row = Math.floor(slot / cols);
+      const x = snap(clamp(
+        bounds.x + 10 + col * ROUND_GRID + (ROUND_10_W - dims.w) / 2,
+        0,
+        CANVAS_W - dims.w
+      ));
+      const y = snap(clamp(
+        baseY + row * ROUND_GRID + (ROUND_10_H - dims.h) / 2,
+        0,
+        CANVAS_H - dims.h
+      ));
+
+      // Stop once the candidate has moved below the usable room footprint.
+      if (y + dims.h > bounds.y + bounds.h) break;
+      if (positionHitsReserved(room, x, y, dims.w, dims.h)) continue;
+
+      if (validIndex === ordinal) return { x, y };
+      validIndex++;
+    }
+
+    // Fallback keeps the table in the room if every preferred grid slot is used.
+    return {
+      x: snap(clamp(bounds.x + 10, 0, CANVAS_W - dims.w)),
+      y: snap(clamp(bounds.y + 54, 0, CANVAS_H - dims.h))
+    };
+  }
+
   function getDefaultPosition(room, type, capacity = 10) {
     const bounds = ROOM_BOUNDS[room];
     const dims = getTableDimensions(type, capacity);
@@ -1909,13 +1981,8 @@
       return { x: snap(x), y: snap(y) };
     }
 
-    const cols = Math.max(1, Math.floor((bounds.w - 20) / ROUND_GRID));
-    const index = state.tables.filter(t => t.room === room && t.type !== 'head').length;
-    const col = index % cols;
-    const row = Math.floor(index / cols);
-    const x = clamp(bounds.x + 10 + col * ROUND_GRID + (ROUND_10_W - dims.w) / 2, 0, CANVAS_W - dims.w);
-    const y = clamp(bounds.y + 54 + row * ROUND_GRID + (ROUND_10_H - dims.h) / 2, 0, CANVAS_H - dims.h);
-    return { x: snap(x), y: snap(y) };
+    const ordinal = state.tables.filter(t => t.room === room && t.type !== 'head').length;
+    return getRoundSlot(room, ordinal, dims);
   }
 
   function autoPlaceTables() {
@@ -1933,15 +2000,11 @@
         startY = Math.max(startY, table.y + h + 10);
       });
 
-      const cols = Math.max(1, Math.floor((bounds.w - 20) / ROUND_GRID));
       rounds.forEach((table, i) => {
-        const { w, h } = getTableDimensions(table);
-        const col = i % cols;
-        const row = Math.floor(i / cols);
-        table.x = snap(bounds.x + 10 + col * ROUND_GRID + (ROUND_10_W - w) / 2);
-        table.y = snap(startY + row * ROUND_GRID + (ROUND_10_H - h) / 2);
-        table.x = clamp(table.x, 0, CANVAS_W - w);
-        table.y = clamp(table.y, 0, CANVAS_H - h);
+        const dims = getTableDimensions(table);
+        const slot = getRoundSlot(room, i, dims, startY);
+        table.x = slot.x;
+        table.y = slot.y;
       });
     });
 
