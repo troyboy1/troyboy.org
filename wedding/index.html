@@ -52,10 +52,16 @@
           <button class="icon-btn" id="openBulkBtn" type="button" title="Paste a guest list" aria-label="Paste a guest list">＋</button>
         </div>
 
-        <div class="guest-stats">
+        <div class="guest-stats guest-stats-rsvp">
           <div><strong id="totalGuests">0</strong><span>Total</span></div>
-          <div><strong id="seatedGuests">0</strong><span>Seated</span></div>
-          <div><strong id="unseatedGuests">0</strong><span>Unseated</span></div>
+          <div><strong id="attendingGuests">0</strong><span>Attending</span></div>
+          <div><strong id="awaitingGuests">0</strong><span>Awaiting</span></div>
+          <div><strong id="declinedGuests">0</strong><span>Declined</span></div>
+        </div>
+        <div class="seating-progress">
+          <span><strong id="seatedGuests">0</strong> seated</span>
+          <span><strong id="unseatedGuests">0</strong> still to place</span>
+          <button class="text-button" id="syncGuestListBtn" type="button">Sync RSVP list</button>
         </div>
 
         <div class="search-row">
@@ -64,6 +70,9 @@
             <option value="all">All</option>
             <option value="unseated">Unseated</option>
             <option value="seated">Seated</option>
+            <option value="attending">Attending</option>
+            <option value="awaiting">Awaiting Reply</option>
+            <option value="declined">Not Attending</option>
           </select>
         </div>
 
@@ -148,8 +157,8 @@
         </div>
         <button class="icon-btn" value="cancel" aria-label="Close">×</button>
       </div>
-      <p>Enter one person per line. You can optionally use <code>Name | Group | Meal</code>.</p>
-      <textarea id="bulkGuestText" rows="14" placeholder="Alex Smith | Smith Family | Chicken&#10;Jordan Lee | College Friends | Vegetarian&#10;Taylor Morgan"></textarea>
+      <p>Enter one person per line. Optional format: <code>Name | Group | Meal | RSVP | Dietary</code>.</p>
+      <textarea id="bulkGuestText" rows="14" placeholder="Alex Smith | Smith Family | Chicken | Attending | Gluten free&#10;Jordan Lee | College Friends | Vegetarian | Awaiting Reply |&#10;Taylor Morgan"></textarea>
       <div class="modal-actions">
         <button class="btn btn-soft" value="cancel" type="button" id="cancelBulkBtn">Cancel</button>
         <button class="btn btn-primary" value="default" type="submit">Add guests</button>
@@ -190,7 +199,10 @@
       <button class="guest-drag-grip" type="button" aria-label="Drag guest to a seat" title="Drag to a seat">⋮⋮</button>
       <button class="guest-open" type="button" aria-label="Open guest profile">
         <span class="guest-main">
-          <strong class="guest-name"></strong>
+          <span class="guest-name-row">
+            <strong class="guest-name"></strong>
+            <span class="guest-rsvp"></span>
+          </span>
           <span class="guest-meta"></span>
         </span>
       </button>
@@ -212,11 +224,19 @@
       <label class="field-label" for="guestNameInput">Name</label>
       <input id="guestNameInput" type="text" required />
       <label class="field-label" for="guestGroupInput">Group / family</label>
-      <input id="guestGroupInput" type="text" placeholder="e.g. Smith Family" />
-      <label class="field-label" for="guestMealInput">Meal</label>
-      <input id="guestMealInput" type="text" placeholder="e.g. Chicken" />
-      <label class="field-label" for="guestNotesInput">Notes</label>
-      <textarea id="guestNotesInput" rows="4" placeholder="Optional notes"></textarea>
+      <input id="guestGroupInput" type="text" placeholder="Optional — e.g. Smith Family" />
+      <label class="field-label" for="guestRsvpInput">RSVP status</label>
+      <select id="guestRsvpInput">
+        <option value="attending">Attending</option>
+        <option value="awaiting">Awaiting Reply</option>
+        <option value="not_attending">Not Attending</option>
+      </select>
+      <label class="field-label" for="guestMealInput">Food selection</label>
+      <textarea id="guestMealInput" rows="3" placeholder="Meal selection"></textarea>
+      <label class="field-label" for="guestDietaryInput">Dietary restrictions</label>
+      <textarea id="guestDietaryInput" rows="3" placeholder="Dietary restrictions / allergy information"></textarea>
+      <label class="field-label" for="guestNotesInput">Planner notes</label>
+      <textarea id="guestNotesInput" rows="3" placeholder="Optional seating notes"></textarea>
       <div class="modal-actions split-actions">
         <div class="danger-actions">
           <button class="btn btn-danger-ghost" id="unseatGuestBtn" type="button">Unseat</button>
