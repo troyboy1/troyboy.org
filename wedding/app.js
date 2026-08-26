@@ -7,27 +7,59 @@
   const CLOUD_SAVE_DELAY = 650;
   const GRID = 10;
 
-  // V2 layout: larger ballroom drawing + substantially smaller round tables.
-  // This lets each room comfortably display roughly 9–12 round tables instead of ~4.
-  const CANVAS_W = 1480;
-  const CANVAS_H = 850;
-  const ROUND_W = 112;
-  const ROUND_H = 112;
-  const HEAD_W = 520;
-  const HEAD_H = 128;
-  const ROUND_GAP = 115;
+  // V3 real-world scale model.
+  // Approximate room dimensions are inferred from Arrowhead's published square footage
+  // plus the proportions of its official floor-plan drawing:
+  // East ~52x33 ft, Center ~55x37 ft, West ~44x37 ft.
+  // We render at 10 px per foot, so the 10 px drag grid is approximately 1 foot.
+  const PX_PER_FOOT = 10;
+  const CANVAS_W = 1580;
+  const CANVAS_H = 700;
+
+  // Table footprints include chairs, while the table surface itself is drawn to scale.
+  // 8-person round: ~5 ft tabletop / ~9 ft occupied footprint.
+  // 10-person round: ~6 ft tabletop / ~10 ft occupied footprint.
+  // 24-person head table: 13 seats on one side and 11 on the other, with the
+  // two positions directly across from Bride/Groom intentionally left open.
+  const ROUND_8_W = 90;
+  const ROUND_8_H = 90;
+  const ROUND_10_W = 100;
+  const ROUND_10_H = 100;
+  const HEAD_W = 280;
+  const HEAD_H = 76;
+  const ROUND_GRID = 110;
 
   const ROOM_BOUNDS = {
+    east:   { x: 30,   y: 190, w: 520, h: 330, feetW: 52, feetH: 33 },
+    center: { x: 548,  y: 150, w: 550, h: 370, feetW: 55, feetH: 37 },
+    west:   { x: 1096, y: 190, w: 440, h: 370, feetW: 44, feetH: 37 }
+  };
+
+  // Previous V2 layout, used only to preserve saved table positions during migration.
+  const V2_ROOM_BOUNDS = {
     east:   { x: 30,   y: 185, w: 445, h: 520 },
     center: { x: 470,  y: 90,  w: 540, h: 520 },
     west:   { x: 1005, y: 185, w: 445, h: 520 }
   };
 
-  const OLD_ROOM_BOUNDS = {
+  // Original V1 layout, retained so old backups can still be imported safely.
+  const V1_ROOM_BOUNDS = {
     east:   { x: 35,  y: 170, w: 370, h: 420 },
     center: { x: 399, y: 92,  w: 430, h: 410 },
     west:   { x: 823, y: 170, w: 360, h: 420 }
   };
+
+  function getTableDimensions(tableOrType, capacityOverride) {
+    const type = typeof tableOrType === 'string' ? tableOrType : tableOrType?.type;
+    const capacity = Number(
+      capacityOverride ??
+      (typeof tableOrType === 'object' ? tableOrType?.capacity : 10)
+    ) || 10;
+
+    if (type === 'head') return { w: HEAD_W, h: HEAD_H };
+    if (capacity <= 8) return { w: ROUND_8_W, h: ROUND_8_H };
+    return { w: ROUND_10_W, h: ROUND_10_H };
+  }
 
   const GUEST_SEED_VERSION = 1;
   const OFFICIAL_GUESTS = [
@@ -1454,7 +1486,7 @@
 
   function emptyState() {
     return {
-      version: 2,
+      version: 3,
       guests: [],
       tables: [],
       counters: { table: 1 },
@@ -1490,26 +1522,50 @@
       table.room = ROOM_BOUNDS[table.room] ? table.room : 'center';
       table.type = table.type === 'head' ? 'head' : 'round';
       table.seats = Array.isArray(table.seats) ? table.seats : Array(table.capacity).fill(null);
+
+      // Upgrade the existing 22-seat head table to the corrected 24-person layout.
+      // Old seats 1-12 remain on the top side. Old bottom seats 13-22 shift down
+      // one index so nobody's assignment is lost when the 13th top seat is inserted.
+      if (table.type === 'head' && table.capacity === 22) {
+        const oldSeats = table.seats.slice(0, 22);
+        const upgraded = Array(24).fill(null);
+        for (let i = 0; i < 12; i++) upgraded[i] = oldSeats[i] || null;
+        for (let i = 0; i < 10; i++) upgraded[13 + i] = oldSeats[12 + i] || null;
+        table.capacity = 24;
+        table.seats = upgraded;
+      }
+
+      if (table.type === 'head') table.capacity = 24;
       while (table.seats.length < table.capacity) table.seats.push(null);
       if (table.seats.length > table.capacity) table.seats = table.seats.slice(0, table.capacity);
     });
 
-    if (previousVersion < 2 && state.tables.length) migrateLegacyTablePositions();
-    state.version = 2;
+    if (previousVersion < 3 && state.tables.length) migrateTablePositions(previousVersion);
+    state.version = 3;
   }
 
-  function migrateLegacyTablePositions() {
+  function migrateTablePositions(previousVersion) {
     state.tables.forEach(table => {
-      const oldBounds = OLD_ROOM_BOUNDS[table.room] || OLD_ROOM_BOUNDS.center;
+      const oldBoundsMap = previousVersion < 2 ? V1_ROOM_BOUNDS : V2_ROOM_BOUNDS;
+      const oldBounds = oldBoundsMap[table.room] || oldBoundsMap.center;
       const newBounds = ROOM_BOUNDS[table.room] || ROOM_BOUNDS.center;
-      const oldW = table.type === 'head' ? 460 : 164;
-      const oldH = table.type === 'head' ? 150 : 164;
-      const newW = table.type === 'head' ? HEAD_W : ROUND_W;
-      const newH = table.type === 'head' ? HEAD_H : ROUND_H;
+
+      let oldW;
+      let oldH;
+      if (previousVersion < 2) {
+        oldW = table.type === 'head' ? 460 : 164;
+        oldH = table.type === 'head' ? 150 : 164;
+      } else {
+        oldW = table.type === 'head' ? 520 : 112;
+        oldH = table.type === 'head' ? 128 : 112;
+      }
+
+      const { w: newW, h: newH } = getTableDimensions(table);
       const centerX = (Number(table.x) || oldBounds.x) + oldW / 2;
       const centerY = (Number(table.y) || oldBounds.y) + oldH / 2;
       const fx = clamp((centerX - oldBounds.x) / oldBounds.w, 0, 1);
       const fy = clamp((centerY - oldBounds.y) / oldBounds.h, 0, 1);
+
       table.x = snap(clamp(newBounds.x + fx * newBounds.w - newW / 2, 0, CANVAS_W - newW));
       table.y = snap(clamp(newBounds.y + fy * newBounds.h - newH / 2, 0, CANVAS_H - newH));
     });
@@ -1594,14 +1650,14 @@
         const cloudVersion = Number(data.version) || 1;
         state = data;
         normalizeState();
-        migratedCloudLayout = cloudVersion < 2;
+        migratedCloudLayout = cloudVersion < 3;
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
         renderAll();
       }
 
       cloudReady = true;
       const guestListChanged = maybeSyncOfficialGuestList();
-      if (migratedCloudLayout && !guestListChanged) saveState('Layout upgraded');
+      if (migratedCloudLayout && !guestListChanged) saveState('Real-scale layout upgraded');
       if (!guestListChanged) {
         const now = new Date();
         setSaveStatus(`Synced with Supabase · ${now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`, true);
@@ -1644,7 +1700,7 @@
   function bindEvents() {
     els.add8Btn.addEventListener('click', () => addTable('round', 8, els.targetRoom.value));
     els.add10Btn.addEventListener('click', () => addTable('round', 10, els.targetRoom.value));
-    els.addHeadBtn.addEventListener('click', () => addTable('head', 22, els.targetRoom.value));
+    els.addHeadBtn.addEventListener('click', () => addTable('head', 24, els.targetRoom.value));
     els.autoPlaceBtn.addEventListener('click', autoPlaceTables);
 
     els.quickAddForm.addEventListener('submit', e => {
@@ -1699,7 +1755,7 @@
       const newRoom = els.tableRoomInput.value;
       if (newRoom !== table.room) {
         table.room = newRoom;
-        const pos = getDefaultPosition(newRoom, table.type);
+        const pos = getDefaultPosition(newRoom, table.type, table.capacity);
         table.x = pos.x;
         table.y = pos.y;
       }
@@ -1816,7 +1872,7 @@
       if (!confirm('A head table already exists. Add another one anyway?')) return;
     }
 
-    const position = getDefaultPosition(room, type);
+    const position = getDefaultPosition(room, type, capacity);
     const number = state.counters.table++;
     state.tables.push({
       id: uid('table'),
@@ -1842,25 +1898,23 @@
     commit({ message: 'Table deleted' });
   }
 
-  function getDefaultPosition(room, type) {
+  function getDefaultPosition(room, type, capacity = 10) {
     const bounds = ROOM_BOUNDS[room];
-    const isHead = type === 'head';
-    const w = isHead ? HEAD_W : ROUND_W;
-    const h = isHead ? HEAD_H : ROUND_H;
+    const dims = getTableDimensions(type, capacity);
     const sameRoom = state.tables.filter(t => t.room === room && t.type === type);
 
-    if (isHead) {
-      const x = clamp(bounds.x + (bounds.w - w) / 2, 0, CANVAS_W - w);
-      const y = clamp(bounds.y + 54 + sameRoom.length * (HEAD_H + 10), 0, CANVAS_H - h);
+    if (type === 'head') {
+      const x = clamp(bounds.x + (bounds.w - dims.w) / 2, 0, CANVAS_W - dims.w);
+      const y = clamp(bounds.y + 52 + sameRoom.length * (dims.h + 10), 0, CANVAS_H - dims.h);
       return { x: snap(x), y: snap(y) };
     }
 
-    const cols = Math.max(1, Math.floor((bounds.w - 24) / ROUND_GAP));
+    const cols = Math.max(1, Math.floor((bounds.w - 20) / ROUND_GRID));
     const index = state.tables.filter(t => t.room === room && t.type !== 'head').length;
     const col = index % cols;
     const row = Math.floor(index / cols);
-    const x = clamp(bounds.x + 14 + col * ROUND_GAP, 0, CANVAS_W - w);
-    const y = clamp(bounds.y + 55 + row * ROUND_GAP, 0, CANVAS_H - h);
+    const x = clamp(bounds.x + 10 + col * ROUND_GRID + (ROUND_10_W - dims.w) / 2, 0, CANVAS_W - dims.w);
+    const y = clamp(bounds.y + 54 + row * ROUND_GRID + (ROUND_10_H - dims.h) / 2, 0, CANVAS_H - dims.h);
     return { x: snap(x), y: snap(y) };
   }
 
@@ -1870,27 +1924,29 @@
       const tables = state.tables.filter(t => t.room === room);
       const heads = tables.filter(t => t.type === 'head');
       const rounds = tables.filter(t => t.type !== 'head');
-      let startY = bounds.y + 55;
+      let startY = bounds.y + 54;
 
       heads.forEach((table, i) => {
-        table.x = snap(clamp(bounds.x + (bounds.w - HEAD_W) / 2, 0, CANVAS_W - HEAD_W));
-        table.y = snap(clamp(bounds.y + 48 + i * (HEAD_H + 10), 0, CANVAS_H - HEAD_H));
-        startY = Math.max(startY, table.y + HEAD_H + 8);
+        const { w, h } = getTableDimensions(table);
+        table.x = snap(clamp(bounds.x + (bounds.w - w) / 2, 0, CANVAS_W - w));
+        table.y = snap(clamp(bounds.y + 46 + i * (h + 10), 0, CANVAS_H - h));
+        startY = Math.max(startY, table.y + h + 10);
       });
 
-      const cols = Math.max(1, Math.floor((bounds.w - 24) / ROUND_GAP));
+      const cols = Math.max(1, Math.floor((bounds.w - 20) / ROUND_GRID));
       rounds.forEach((table, i) => {
+        const { w, h } = getTableDimensions(table);
         const col = i % cols;
         const row = Math.floor(i / cols);
-        table.x = snap(bounds.x + 14 + col * ROUND_GAP);
-        table.y = snap(startY + row * ROUND_GAP);
-        table.x = clamp(table.x, 0, CANVAS_W - ROUND_W);
-        table.y = clamp(table.y, 0, CANVAS_H - ROUND_H);
+        table.x = snap(bounds.x + 10 + col * ROUND_GRID + (ROUND_10_W - w) / 2);
+        table.y = snap(startY + row * ROUND_GRID + (ROUND_10_H - h) / 2);
+        table.x = clamp(table.x, 0, CANVAS_W - w);
+        table.y = clamp(table.y, 0, CANVAS_H - h);
       });
     });
 
     commit({ guests: false, message: 'Tables auto-placed' });
-    toast('Tables arranged with the new compact spacing.');
+    toast('Tables arranged using the approximate real-world scale.');
   }
 
   function renderAll() {
@@ -1996,8 +2052,12 @@
       const wrapper = document.createElement('div');
       wrapper.className = `table-item ${table.type === 'head' ? 'head-table' : 'round-table'} room-${table.room}`;
       wrapper.dataset.tableId = table.id;
+      wrapper.dataset.capacity = String(table.capacity);
+      const tableDims = getTableDimensions(table);
       wrapper.style.left = `${table.x}px`;
       wrapper.style.top = `${table.y}px`;
+      wrapper.style.width = `${tableDims.w}px`;
+      wrapper.style.height = `${tableDims.h}px`;
 
       const surface = document.createElement('div');
       surface.className = 'table-surface';
@@ -2055,10 +2115,12 @@
   }
 
   function renderRoundSeats(wrapper, table) {
-    const centerX = ROUND_W / 2;
-    const centerY = ROUND_H / 2;
-    const seatSize = 24;
-    const radius = 44;
+    const { w, h } = getTableDimensions(table);
+    const centerX = w / 2;
+    const centerY = h / 2;
+    const seatSize = 18;
+    const radius = table.capacity <= 8 ? 36 : 41;
+
     for (let i = 0; i < table.capacity; i++) {
       const angle = -Math.PI / 2 + (i * 2 * Math.PI / table.capacity);
       const x = centerX + Math.cos(angle) * radius - seatSize / 2;
@@ -2068,15 +2130,26 @@
   }
 
   function renderHeadSeats(wrapper, table) {
-    const topXs = Array.from({ length: 12 }, (_, i) => 8 + i * 44);
-    const bottomXs = [8, 58, 108, 158, 208, 288, 338, 388, 438, 488];
+    const seatSize = 18;
+    const left = 10;
+    const right = HEAD_W - 10;
+    const step = (right - left) / 12;
+
+    // 13 seats on the Bride/Groom side.
+    const topXs = Array.from({ length: 13 }, (_, i) => left + i * step - seatSize / 2);
+
+    // The opposite side mirrors those 13 positions but leaves the two positions
+    // directly across from the Bride and Groom empty, producing 11 seats there.
+    const bottomPositionIndexes = [0, 1, 2, 3, 4, 7, 8, 9, 10, 11, 12];
 
     topXs.forEach((x, i) => {
       const special = i === 5 ? 'Bride' : i === 6 ? 'Groom' : '';
       wrapper.appendChild(createSeat(table, i, x, 0, special));
     });
-    bottomXs.forEach((x, i) => {
-      wrapper.appendChild(createSeat(table, 12 + i, x, 104));
+
+    bottomPositionIndexes.forEach((positionIndex, i) => {
+      const x = left + positionIndex * step - seatSize / 2;
+      wrapper.appendChild(createSeat(table, 13 + i, x, HEAD_H - seatSize));
     });
   }
 
@@ -2320,8 +2393,7 @@
 
     const dx = rawDx / scale;
     const dy = rawDy / scale;
-    const w = table.type === 'head' ? HEAD_W : ROUND_W;
-    const h = table.type === 'head' ? HEAD_H : ROUND_H;
+    const { w, h } = getTableDimensions(table);
     table.x = snap(clamp(startX + dx, 0, CANVAS_W - w));
     table.y = snap(clamp(startY + dy, 0, CANVAS_H - h));
     el.style.left = `${table.x}px`;
@@ -2347,8 +2419,7 @@
   }
 
   function detectRoom(table) {
-    const w = table.type === 'head' ? HEAD_W : ROUND_W;
-    const h = table.type === 'head' ? HEAD_H : ROUND_H;
+    const { w, h } = getTableDimensions(table);
     const cx = table.x + w / 2;
     const cy = table.y + h / 2;
     let bestRoom = null;
