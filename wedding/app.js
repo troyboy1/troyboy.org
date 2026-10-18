@@ -18,14 +18,15 @@
   // Table footprints include chairs, while the table surface itself is drawn to scale.
   // 8-person round: ~5 ft tabletop / ~9 ft occupied footprint.
   // 10-person round: ~6 ft tabletop / ~10 ft occupied footprint.
-  // 24-person head table: 13 seats on one side and 11 on the other, with the
-  // two positions directly across from Bride/Groom intentionally left open.
+  // 24-person head table: larger King's-table footprint. Layout is 12 across the
+  // Bride/Groom side, 4 on each lower side with a center gap, and 2 on each end.
+  // The center gap keeps guests from sitting directly across from Bride/Groom.
   const ROUND_8_W = 90;
   const ROUND_8_H = 90;
   const ROUND_10_W = 100;
   const ROUND_10_H = 100;
-  const HEAD_W = 280;
-  const HEAD_H = 76;
+  const HEAD_W = 350;
+  const HEAD_H = 150;
   const ROUND_GRID = 110;
 
   const ROOM_BOUNDS = {
@@ -1499,7 +1500,7 @@
 
   function emptyState() {
     return {
-      version: 4,
+      version: 6,
       guests: [],
       tables: [],
       counters: { table: 1 },
@@ -1554,7 +1555,42 @@
     });
 
     if (previousVersion < 4 && state.tables.length) migrateTablePositions(previousVersion);
-    state.version = 4;
+    if (previousVersion === 4 && state.tables.length) migrateHeadTableSizeFromV4();
+    if (previousVersion === 5 && state.tables.length) migrateHeadTableToTopBottomOnly();
+    state.version = 6;
+  }
+
+  function migrateHeadTableToTopBottomOnly() {
+    state.tables.forEach(table => {
+      if (table.type !== 'head' || table.capacity !== 24) return;
+
+      // V5 had 12 seats across the top, 8 across the bottom, and 4 seats
+      // on the short ends. V6 moves those four end seats to the outer ends
+      // of the top row so all 24 guests sit ONLY on the top or bottom.
+      // This keeps everybody in roughly the same physical place while putting
+      // Bride/Groom at the center of a 16-person top row.
+      const oldSeats = table.seats.slice(0, 24);
+      const remapped = Array(24).fill(null);
+
+      // Old left-end seats 21-22 become new top seats 1-2.
+      remapped[0] = oldSeats[20] || null;
+      remapped[1] = oldSeats[21] || null;
+
+      // Old top seats 1-12 become new top seats 3-14.
+      for (let i = 0; i < 12; i++) remapped[i + 2] = oldSeats[i] || null;
+
+      // Old right-end seats 23-24 become new top seats 15-16.
+      remapped[14] = oldSeats[22] || null;
+      remapped[15] = oldSeats[23] || null;
+
+      // Old bottom-left seats 13-16 become new bottom-left seats 17-20.
+      for (let i = 0; i < 4; i++) remapped[16 + i] = oldSeats[12 + i] || null;
+
+      // Old bottom-right seats 17-20 become new bottom-right seats 21-24.
+      for (let i = 0; i < 4; i++) remapped[20 + i] = oldSeats[16 + i] || null;
+
+      table.seats = remapped;
+    });
   }
 
   function migrateTablePositions(previousVersion) {
@@ -1576,9 +1612,9 @@
         oldW = table.type === 'head' ? 520 : 112;
         oldH = table.type === 'head' ? 128 : 112;
       } else {
-        const previousDims = getTableDimensions(table);
-        oldW = previousDims.w;
-        oldH = previousDims.h;
+        // V3/V4 used the smaller 280×76 head-table footprint.
+        oldW = table.type === 'head' ? 280 : getTableDimensions(table).w;
+        oldH = table.type === 'head' ? 76 : getTableDimensions(table).h;
       }
 
       const { w: newW, h: newH } = getTableDimensions(table);
@@ -1589,6 +1625,19 @@
 
       table.x = snap(clamp(newBounds.x + fx * newBounds.w - newW / 2, 0, CANVAS_W - newW));
       table.y = snap(clamp(newBounds.y + fy * newBounds.h - newH / 2, 0, CANVAS_H - newH));
+    });
+  }
+
+  function migrateHeadTableSizeFromV4() {
+    // Keep the visual center of an existing head table in the same spot while
+    // expanding its footprint from 280×76 to 350×150.
+    state.tables.forEach(table => {
+      if (table.type !== 'head') return;
+      const oldW = 280;
+      const oldH = 76;
+      const { w: newW, h: newH } = getTableDimensions(table);
+      table.x = snap(clamp((Number(table.x) || 0) - (newW - oldW) / 2, 0, CANVAS_W - newW));
+      table.y = snap(clamp((Number(table.y) || 0) - (newH - oldH) / 2, 0, CANVAS_H - newH));
     });
   }
 
@@ -2194,25 +2243,33 @@
 
   function renderHeadSeats(wrapper, table) {
     const seatSize = 18;
-    const left = 10;
-    const right = HEAD_W - 10;
-    const step = (right - left) / 12;
 
-    // 13 seats on the Bride/Groom side.
-    const topXs = Array.from({ length: 13 }, (_, i) => left + i * step - seatSize / 2);
+    // Seats 1-16: one continuous row across the top.
+    // Bride and Groom are centered at seats 8 and 9.
+    const topLeft = 12;
+    const topRight = HEAD_W - 12;
+    const topStep = (topRight - topLeft) / 15;
 
-    // The opposite side mirrors those 13 positions but leaves the two positions
-    // directly across from the Bride and Groom empty, producing 11 seats there.
-    const bottomPositionIndexes = [0, 1, 2, 3, 4, 7, 8, 9, 10, 11, 12];
-
-    topXs.forEach((x, i) => {
-      const special = i === 5 ? 'Bride' : i === 6 ? 'Groom' : '';
+    for (let i = 0; i < 16; i++) {
+      const x = topLeft + i * topStep - seatSize / 2;
+      const special = i === 7 ? 'Bride' : i === 8 ? 'Groom' : '';
       wrapper.appendChild(createSeat(table, i, x, 0, special));
+    }
+
+    // Seats 17-20: four guests on the lower-left side.
+    // Seats 21-24: four guests on the lower-right side.
+    // The large open center directly across from Bride/Groom is intentional
+    // so they have an unobstructed view toward the dance floor.
+    const bottomY = HEAD_H - seatSize;
+    const lowerLeft = [52, 80, 108, 136];
+    const lowerRight = [HEAD_W - 136, HEAD_W - 108, HEAD_W - 80, HEAD_W - 52];
+
+    lowerLeft.forEach((centerX, i) => {
+      wrapper.appendChild(createSeat(table, 16 + i, centerX - seatSize / 2, bottomY));
     });
 
-    bottomPositionIndexes.forEach((positionIndex, i) => {
-      const x = left + positionIndex * step - seatSize / 2;
-      wrapper.appendChild(createSeat(table, 13 + i, x, HEAD_H - seatSize));
+    lowerRight.forEach((centerX, i) => {
+      wrapper.appendChild(createSeat(table, 20 + i, centerX - seatSize / 2, bottomY));
     });
   }
 
